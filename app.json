@@ -13,12 +13,19 @@
     },
     "plugins": [
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
+        }
+      ],
+      [
         "expo-barcode-scanner",
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
         }
       ]
     ],
+    
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -46,6 +53,9 @@
       "eas": {
         "projectId": "4a73b5b9-f1fc-48db-83c2-ff20bee85af4"
       }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
     }
   }
 }

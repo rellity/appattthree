@@ -1,37 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Image,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert } from 'react-native';
 import axios from 'axios';
 import { Dialog } from '@rneui/themed';
-import { useApiUrl } from './ApiUrlContext';
+import * as SecureStore from 'expo-secure-store'; // Import SecureStore
 
 const BarcodeGenerator = () => {
   const [barcodeData, setBarcodeData] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const [isBarcodeDialogVisible, setBarcodeDialogVisible] = useState(false);
-  const { apiUrl } = useApiUrl();
+  const [apiUrl, setApiUrl] = useState(''); // api url store???
+  const [error, setError] = useState(null); // New error state
 
   const generateBarcode = async () => {
     try {
-        if (!apiUrl) {
-          console.error('API URL is not set.');
-          return;
-        }
-        
-        var compurl = `http://${apiUrl}/attappthree/barcode.php`;
-
-        const response = await axios.get(compurl, {
-          params: { value: inputValue },
-        });
+      if (!apiUrl) {
+        setError('API URL is not set.');
+        return;
+      }
+  
+      const compurl = `${apiUrl}/attappthree/barcode.php`;
+  
+      const response = await axios.get(compurl, {
+        params: { value: inputValue },
+      });
+  
       setBarcodeData(response.data);
+      setError(null);
+  
+      // Open the barcode dialog automatically after setting the data
+      openBarcodeDialog();
     } catch (error) {
+      setError('Error generating barcode.');
       console.error(compurl, error);
     }
   };
@@ -53,7 +52,8 @@ const BarcodeGenerator = () => {
   useEffect(() => {
     const fetchApiUrl = async () => {
       try {
-        const storedApiUrl = await AsyncStorage.getItem('apiUrl');
+        // Use SecureStore to retrieve the stored API URL
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
         if (storedApiUrl) {
           setApiUrl(storedApiUrl);
         }
@@ -81,25 +81,6 @@ const BarcodeGenerator = () => {
       >
         <Text style={styles.buttonText}>Generate Barcode</Text>
       </TouchableOpacity>
-      {barcodeData && (
-        <View style={styles.resultContainer}>
-          <Text style={styles.resultText}>Text: {barcodeData.text}</Text>
-          <Image
-            source={{
-              uri: `data:image/png;base64,${barcodeData.barcodeImage}`,
-            }}
-            style={styles.barcodeImage}
-            resizeMode="contain"
-          />
-          <TouchableOpacity
-            style={styles.showBarcodeButton}
-            onPress={openBarcodeDialog}
-          >
-            <Text style={styles.buttonText}>Show Barcode</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      <Text style={styles.footerText}>ICTS 2023-2024</Text>
 
       {/* Barcode Dialog */}
       <Dialog
@@ -116,6 +97,9 @@ const BarcodeGenerator = () => {
               style={styles.barcodeImage}
               resizeMode="contain"
             />
+
+            <Text style={styles.footerText}>ICTS 2023-2024</Text>
+            
           </View>
         )}
         <Dialog.Actions>
@@ -123,8 +107,6 @@ const BarcodeGenerator = () => {
         </Dialog.Actions>
       </Dialog>
     </View>
-
-    
   );
 };
 
@@ -145,7 +127,7 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 10,
-    borderRadius:20,
+    borderRadius: 20,
     paddingHorizontal: 10,
   },
   generateButton: {

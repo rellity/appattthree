@@ -1,36 +1,36 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { Alert } from 'react-native';
 
 const ApiUrlContext = createContext();
 
 const ApiUrlProvider = ({ children }) => {
-  const [apiUrl, setApiUrl] = useState(''); // Initialize apiUrl state
+  const [apiUrl, setApiUrl] = useState('');
 
-  // Function to set the apiUrl
   const setUrl = async (url) => {
     try {
-      await AsyncStorage.setItem('apiUrl', url); // Save to AsyncStorage
+      await SecureStore.setItemAsync('apiUrl', url);
       setApiUrl(url);
     } catch (error) {
-      console.error('Error saving API URL:', error);
+      Alert.alert('Error saving API URL:', error);
     }
   };
 
-  // Fetch the stored API URL when the screen is mounted
   useEffect(() => {
     const fetchApiUrl = async () => {
       try {
-        const storedApiUrl = await AsyncStorage.getItem('apiUrl');
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
         if (storedApiUrl) {
           setApiUrl(storedApiUrl);
         }
       } catch (error) {
-        console.error('Error fetching API URL:', error);
+        Alert.alert('Error fetching API URL:', error);
+        // error handling idk
       }
     };
 
     fetchApiUrl();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
 
   return (
     <ApiUrlContext.Provider value={{ apiUrl, setUrl }}>

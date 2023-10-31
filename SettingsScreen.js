@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ToastAndroid } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import { useNavigation } from '@react-navigation/native';
+import { CheckBox } from 'react-native-elements';
+
 
 const SettingsScreen = () => {
   const [apiUrl, setApiUrl] = useState('');
+  const [useHttps, setUseHttps] = useState(false);
 
-  // Fetch the stored API URL when the screen is mounted
+
   useEffect(() => {
     const fetchApiUrl = async () => {
       try {
-        const storedApiUrl = await AsyncStorage.getItem('apiUrl');
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
         if (storedApiUrl) {
           setApiUrl(storedApiUrl);
         }
@@ -20,22 +23,54 @@ const SettingsScreen = () => {
     };
 
     fetchApiUrl();
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
+
+  const navigation = useNavigation();
 
   const handleSave = async () => {
     try {
-      // Validate apiUrl here if needed
       if (!apiUrl) {
-        alert('API URL cannot be empty');
+        Alert.alert('api url cannot be empty', 'null', [{text: 'Ok', style: 'default'}]);
         return;
       }
 
-      // Save the API URL to AsyncStorage
-      await AsyncStorage.setItem('apiUrl', apiUrl);
-      alert('API URL saved successfully');
+      const protocol = useHttps ? 'https://' : 'http://';
+      const fullapiUrl = `${protocol}${apiUrl}`;
+
+  
+      Alert.alert(
+        'Confirm Save',
+        `Save API URL: ${apiUrl}?`,
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Save',
+            onPress: async () => {
+              try {
+                await SecureStore.setItemAsync('apiUrl', fullapiUrl);
+                navigation.navigate('MainPage', { updatedApiUrl: apiUrl });
+                ToastAndroid.showWithGravityAndOffset(
+                  `API URL saved: ${fullapiUrl}`,
+                  ToastAndroid.LONG,
+                  ToastAndroid.BOTTOM,
+                  25,
+                  50
+                );
+                
+              } catch (error) {
+                console.error('Error saving API URL:', error);
+                Alert.alert('Error saving API URL', error, [{text: 'Ok', style: 'default'}]);
+              }
+            },
+          },
+        ]
+      );
     } catch (error) {
       console.error('Error saving API URL:', error);
-      alert('Error saving API URL');
+      Alert.alert('Error saving API URL', error, [{text: 'Ok', style: 'default'}]);
     }
   };
 
@@ -44,11 +79,19 @@ const SettingsScreen = () => {
       <Text style={styles.title}>API Settings</Text>
       <TextInput
         placeholder="Enter API URL"
-        value={apiUrl}
+        value={apiUrl.replace(/^(https?|ftp):\/\//, '')}
         onChangeText={(text) => setApiUrl(text)}
         style={styles.input}
       />
+
+      <CheckBox
+        title="Use HTTPS"
+        checked={useHttps}
+        onPress={() => setUseHttps(!useHttps)}
+      />
+
       <Button title="Save" onPress={handleSave} />
+
     </View>
   );
 };

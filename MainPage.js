@@ -2,8 +2,10 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import { useApiUrl } from './ApiUrlContext';
 
-const MainPage = ({ navigation }) => {
-  var {apiUrl} = useApiUrl();
+const MainPage = ({ route,navigation }) => {
+  const { apiUrl } = useApiUrl();
+  const updatedApiUrl = route.params ? route.params.updatedApiUrl : null;
+  
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -13,7 +15,7 @@ const MainPage = ({ navigation }) => {
         resizeMode="contain" // Preserve aspect ratio
       />
       
-      <Text>API URL: {apiUrl}</Text>
+      <Text>API URL: {updatedApiUrl || apiUrl}</Text>
 
       {/* Buttons */}
       <TouchableOpacity
@@ -38,10 +40,13 @@ const MainPage = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('SettingsScreen')}
+        onPress={() => {
+          navigation.navigate('SettingsScreen');
+        }}
       >
         <Text style={styles.buttonText}>API Settings</Text>
       </TouchableOpacity>
+      
     </View>
   );
 };

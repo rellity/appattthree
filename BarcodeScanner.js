@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { Camera } from 'expo-camera';
+import Modal from 'react-native-modal'; // Import the library
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const [manualInput, setManualInput] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [isLoading, setLoading] = useState(false); // State for loading animation
+  const [isAlertVisible, setAlertVisible] = useState(false); //alert flag
+
 
   useEffect(() => {
     (async () => {
@@ -14,9 +19,24 @@ export default function App() {
     })();
   }, []);
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = async ({ type, data }) => {
+    if (isAlertVisible) {
+      return;
+    }
     setScanned(true);
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    setLoading(true); // loading here
+
+    // async operations
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    setLoading(false); // hide loading animation
+
+    alert(`barcode type: ${type}  \nid number: ${data}`);
+
+    // To continue scanning, reset the 'scanned' state after a short delay.
+    setTimeout(() => {
+      setScanned(false);
+    }, 2000); // Adjust the delay as needed (e.g., 2000 milliseconds or 2 seconds)
   };
 
   const renderCamera = () => {
@@ -28,6 +48,36 @@ export default function App() {
         />
       </View>
     );
+  };
+
+  const renderManualInput = () => {
+    if (showManualInput) {
+      return (
+        <View style={styles.manualInputContainer}>
+          <TextInput
+            style={styles.manualInput}
+            placeholder="Enter barcode manually (e.g., 123456-7)"
+            value={manualInput}
+            onChangeText={text => handleManualInput(text)}
+          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              if (/^\d{6}-\d$/.test(manualInput)) {
+                // Handle valid manual input here
+                alert(`Manually entered barcode: ${manualInput}`);
+                setManualInput('');
+              } else {
+                alert('Invalid barcode format. Please enter in the format "xxxxxx-x".');
+              }
+              setShowManualInput(false); // Close the manual input section
+            }}
+          >
+            <Text style={styles.buttonText}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
   };
 
   if (hasPermission === null) {
@@ -49,11 +99,24 @@ export default function App() {
       {renderCamera()}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => setScanned(false)}
+        onPress={() => {
+          setScanned(false);
+          setShowManualInput(prevState => !prevState);
+          setManualInput('');
+        }}
         disabled={scanned}
       >
         <Text style={styles.buttonText}>Scan QR to Start your job</Text>
       </TouchableOpacity>
+      {renderManualInput()}
+
+      {/* Loading Modal */}
+      <Modal isVisible={isLoading} backdropOpacity={0.6}>
+        <View style={styles.loadingModal}>
+          <ActivityIndicator size="large" color="blue" />
+          <Text>Loading...</Text>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -93,5 +156,22 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  manualInputContainer: {
+    marginBottom: 20,
+  },
+  manualInput: {
+    width: '80%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  loadingModal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
