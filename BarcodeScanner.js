@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import Modal from 'react-native-modal'; // Import the library
+import Loader from './Loader';
+import { useRoute } from '@react-navigation/native';
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -10,6 +11,8 @@ export default function App() {
   const [showManualInput, setShowManualInput] = useState(false);
   const [isLoading, setLoading] = useState(false); // State for loading animation
   const [isAlertVisible, setAlertVisible] = useState(false); //alert flag
+  const route = useRoute();
+  const selectedTable = route.params.selectedTable;
 
 
   useEffect(() => {
@@ -106,17 +109,18 @@ export default function App() {
         }}
         disabled={scanned}
       >
-        <Text style={styles.buttonText}>Scan QR to Start your job</Text>
+        <Text style={styles.buttonText}>Refresh</Text>
       </TouchableOpacity>
+
+
       {renderManualInput()}
 
       {/* Loading Modal */}
-      <Modal isVisible={isLoading} backdropOpacity={0.6}>
-        <View style={styles.loadingModal}>
-          <ActivityIndicator size="large" color="blue" />
-          <Text>Loading...</Text>
-        </View>
-      </Modal>
+      {isLoading && (
+      <View style={styles.loadingContainer}>
+        <Loader isActive={isLoading} />
+      </View>
+      )}
     </View>
   );
 }
@@ -169,9 +173,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
   },
-  loadingModal: {
-    flex: 1,
-    justifyContent: 'center',
+  loadingContainer: {
+    position: 'absolute',
+    width: '80%',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
     alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
 });
