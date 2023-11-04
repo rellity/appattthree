@@ -2,9 +2,9 @@ import React from 'react';
 import { View } from 'react-native';
 import LottieView from 'lottie-react-native';
 
-const Loader = ({ isActive }) => {
+const LoaderView = ({ isActive }) => {
   return isActive ? (
-    <View style={{ width: 200, height: 200 }}>
+    <View style={{ width: 150, height: 150 }}>
       <LottieView
         source={require('./loader1.json')}
         autoPlay
@@ -12,4 +12,4 @@ const Loader = ({ isActive }) => {
     </View>
   ) : null;
 };
-export default Loader;
+export default LoaderView;

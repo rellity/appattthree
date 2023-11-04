@@ -22,20 +22,13 @@ const MainPage = ({ route,navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate('BarcodeGenerator')}
       >
-        <Text style={styles.buttonText}>Generate Barcode</Text>
+        <Text style={styles.buttonText}>Generate Student 2d Code</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate('OptionSelector')}
       >
         <Text style={styles.buttonText}>View Events</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('BarcodeScanner')}
-      >
-        <Text style={styles.buttonText}>Open Scanner</Text>
       </TouchableOpacity>
 
       <TouchableOpacity

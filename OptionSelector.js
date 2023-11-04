@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, Button } from 'react-native';
+import { View, Text, Alert,TouchableOpacity, StyleSheet, } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { FlatList } from 'react-native';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
@@ -68,11 +67,12 @@ const OptionSelector = () => {
   
 
   return (
-    <View>
+    <View style={styles.container}>
       <Text>Select an option:</Text>
       <Picker
         selectedValue={selectedOption}
         onValueChange={handleOptionChange}
+        style={styles.picker}
       >
         <Picker.Item label="Select an option" value={null} />
         {options.map((option, index) => (
@@ -84,7 +84,8 @@ const OptionSelector = () => {
         ))}
       </Picker>
       
-      <Button
+      <TouchableOpacity
+        style={styles.button}
         title="Mount"
         onPress={() => {
           if (selectedOption) {
@@ -95,7 +96,17 @@ const OptionSelector = () => {
             Alert.alert('Please select a table before mounting.');
           }
         }}
-      />
+      >
+        <Text style={styles.buttonText}>Mount Event</Text>
+        
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => null}
+      >
+        <Text style={styles.buttonText}>Create Event</Text>
+      </TouchableOpacity>
 
       {tableData.length > 0 && (
           <Text>{formatData(tableData)}</Text>
@@ -104,6 +115,40 @@ const OptionSelector = () => {
       
     </View>
   );
+  
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'collumn',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF', // Background color for the container
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  button: {
+    width: 300,
+    height: 60,
+    backgroundColor: '#007bff',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+  picker: {
+    width: 300, // Adjust as needed
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default OptionSelector;

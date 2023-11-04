@@ -7,6 +7,8 @@ import OptionSelector from './OptionSelector';
 import { ApiUrlProvider } from './ApiUrlContext';
 import SettingsScreen from './SettingsScreen';
 import BarCodeScanner from './BarcodeScanner';
+import AppHeader from './AppHeader'; // Import the custom header component
+
 
 const Stack = createStackNavigator();
 
@@ -15,7 +17,15 @@ function App() {
     <ApiUrlProvider> 
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Main">
-          <Stack.Screen name="MainPage" component={MainPage} options={{ title: ' ' }} />
+          <Stack.Screen
+            name="MainPage"
+            component={MainPage}
+            options={{
+              title: 'ICTS Logger',
+              headerRight: () => <AppHeader />, // Add the custom header to the headerRight
+            }}
+          />
+
           <Stack.Screen name="BarcodeGenerator" component={BarcodeGenerator} options={{ title: ' ' }} />
           <Stack.Screen name="BarcodeScanner" component={BarCodeScanner} options={{ title: ' ' }} />
           <Stack.Screen name="OptionSelector" component={OptionSelector} options={{ title: ' ' }} />

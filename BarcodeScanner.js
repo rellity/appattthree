@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import Loader from './Loader';
+import LoaderView from './LoaderView';
 import { useRoute } from '@react-navigation/native';
+import axios from 'axios';
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -22,24 +23,65 @@ export default function App() {
     })();
   }, []);
 
+  // const handleData = async (data) => {
+  //   if (isLoading) {
+  //     return;
+  //   }
+  //   setLoading(true);
+
+  //   try {
+  //     const response = await axios.get(
+  //       `${apiUrl}/attappthree/scanres.php`,
+  //       {
+  //         params: {
+  //           data: data,
+  //         },
+  //       }
+  //     );
+
+  //     // Handle the response here
+
+  //     setLoading(false); // Hide loading animation
+
+  //     alert(`Response from API: ${JSON.stringify(response.data)}`);
+  //   } catch (error) {
+  //     setLoading(false); // Hide loading animation
+  //     alert('Error occurred: ' + error.message);
+  //   }
+  // };
+
   const handleBarCodeScanned = async ({ type, data }) => {
     if (isAlertVisible) {
       return;
     }
     setScanned(true);
-    setLoading(true); // loading here
+    setLoading(true); // loading animation enacle
+    
 
     // async operations
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     setLoading(false); // hide loading animation
 
-    alert(`barcode type: ${type}  \nid number: ${data}`);
+    Alert.alert(
+      `scanned data`, 
+      `id number: ${data} \nformat: ${type}` ,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            setScanned(false); //continur
+          }
+        }
+      ]);
+      
 
+    
+    
     // To continue scanning, reset the 'scanned' state after a short delay.
-    setTimeout(() => {
-      setScanned(false);
-    }, 2000); // Adjust the delay as needed (e.g., 2000 milliseconds or 2 seconds)
+    // setTimeout(() => {
+    //   setScanned(false);
+    // }, 2000); // Adjust the delay as needed (e.g., 2000 milliseconds or 2 seconds)
   };
 
   const renderCamera = () => {
@@ -71,7 +113,7 @@ export default function App() {
                 alert(`Manually entered barcode: ${manualInput}`);
                 setManualInput('');
               } else {
-                alert('Invalid barcode format. Please enter in the format "xxxxxx-x".');
+                alert('Invalid barcode format. Please enter in the correct format "xxxxxx-x".');
               }
               setShowManualInput(false); // Close the manual input section
             }}
@@ -97,7 +139,6 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to the Barcode Scanner App!</Text>
       <Text style={styles.paragraph}>Scan a barcode to start your job.</Text>
       {renderCamera()}
       <TouchableOpacity
@@ -118,7 +159,11 @@ export default function App() {
       {/* Loading Modal */}
       {isLoading && (
       <View style={styles.loadingContainer}>
-        <Loader isActive={isLoading} />
+        <View style={styles.top}>
+        
+        <LoaderView isActive={isLoading} />
+        
+        </View>
       </View>
       )}
     </View>
@@ -175,10 +220,18 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     position: 'absolute',
-    width: '80%',
-    backgroundColor: 'rgba(0, 0, 0, 0)',
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+  },
+  top: {
+    flex: 0.3,
+    backgroundColor: 'white',
+    borderWidth: 3,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
 });
