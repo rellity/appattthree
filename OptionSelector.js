@@ -14,7 +14,7 @@ const OptionSelector = () => {
 
 
   const formatData = (data) => {
-    return data.map((item) => ` created on: ${item.logtime} \n created by: ${item.createdby}`).join('\n');
+    return data.map((item) => ` status: ${item.status} \n created on: ${item.createdon} \n created by: ${item.createdby}`).join('\n');
   };
 
   useEffect(() => {
@@ -25,6 +25,7 @@ const OptionSelector = () => {
   const fetchOptions = async () => {
     try {
       const response = await axios.get(`${apiUrl}/attappthree/getOptions.php`);
+      const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
       setOptions(response.data);
     } catch (error) {
       Alert.alert('Error fetching options:', error);
@@ -78,8 +79,8 @@ const OptionSelector = () => {
         {options.map((option, index) => (
           <Picker.Item
             key={index}
-            label={option.Tables_in_appattthree}
-            value={option.Tables_in_appattthree}
+            label={option}
+            value={option}
           />
         ))}
       </Picker>
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'collumn',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF', // Background color for the container
+    backgroundColor: '#FFFFFF', 
   },
   buttonText: {
     color: '#fff',
