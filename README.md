@@ -12,11 +12,11 @@ sample C:\Users\ADMIN\Desktop\
 i run ni ```git clone https://github.com/rellity/appattthree.git```
 
 sunod is i change directory nimo ag terminal nimo 
-
-kung cmd o powershell ```cd attappthree```
+\
+kung cmd o powershell ```cd attappthree```\
 kung bash ```cd ..```
 
 sunod i run ```npm install```
 
-then mao ra to free na nimo usbon tanan kopyahon or i fork ni 
+then mao ra to free na nimo usbon tanan kopyahon or i fork ni\
 paki credit lamang ko char
