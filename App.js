@@ -8,6 +8,8 @@ import { ApiUrlProvider } from './ApiUrlContext';
 import SettingsScreen from './SettingsScreen';
 import BarCodeScanner from './BarcodeScanner';
 import AppHeader from './AppHeader'; // Import the custom header component
+import EventCreationScreen from './EventCreationScreen';
+import StudentLookupScreen from './StudentLookupScreen';
 
 
 const Stack = createStackNavigator();
@@ -30,6 +32,8 @@ function App() {
           <Stack.Screen name="BarcodeScanner" component={BarCodeScanner} options={{ title: ' ' }} />
           <Stack.Screen name="OptionSelector" component={OptionSelector} options={{ title: ' ' }} />
           <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: ' ' }} />
+          <Stack.Screen name="EventCreationScreen" component={EventCreationScreen} options={{ title: ' ' }} />
+          <Stack.Screen name="StudentLookupScreen" component={StudentLookupScreen} options={{ title: ' ' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApiUrlProvider>

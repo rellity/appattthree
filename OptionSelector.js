@@ -18,7 +18,7 @@ const OptionSelector = () => {
   };
 
   useEffect(() => {
-    // Fetch options initially
+    // fetch unsa pa
     fetchOptions();
   }, []);
 
@@ -56,7 +56,7 @@ const OptionSelector = () => {
           setTableData(response.data);
         }
   
-        // log
+        // log , tanggalon ni basta 
         console.log('Response data:', response.data);
       } else {
         setTableData([]); // clear table data????u  
@@ -84,30 +84,49 @@ const OptionSelector = () => {
           />
         ))}
       </Picker>
+      <View style={styles.scontainer}>
+        <TouchableOpacity
+          style={styles.sbutton}
+          title="Mount"
+          onPress={() => {
+            if (selectedOption) {
+              // go to scanner
+              navigation.navigate('BarcodeScanner', { selectedTable: selectedOption });
+            } else {
+              // error handling
+              Alert.alert('Please select a table before mounting.');
+            }
+          }}
+        >
+          <Text style={styles.buttonText}>Mount Event</Text>
+          
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.sbutton}
+          title="Modify"
+          onPress={() => {
+            if (selectedOption) {
+              // go to scanner
+              navigation.navigate('BarcodeScanner', { selectedTable: selectedOption });
+            } else {
+              // error handling
+              Alert.alert('Please select a table to modify.');
+            }
+          }}
+        >
+          <Text style={styles.buttonText}>Modify Event</Text>
+          
+        </TouchableOpacity>
+      </View>
+      <View style={styles.bottomButtonContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('EventCreationScreen')}
+        >
+          <Text style={styles.buttonText}>Create Event</Text>
+        </TouchableOpacity>
+      </View>
       
-      <TouchableOpacity
-        style={styles.button}
-        title="Mount"
-        onPress={() => {
-          if (selectedOption) {
-            // go to scanner
-            navigation.navigate('BarcodeScanner', { selectedTable: selectedOption });
-          } else {
-            // error handling
-            Alert.alert('Please select a table before mounting.');
-          }
-        }}
-      >
-        <Text style={styles.buttonText}>Mount Event</Text>
-        
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => null}
-      >
-        <Text style={styles.buttonText}>Create Event</Text>
-      </TouchableOpacity>
 
       {tableData.length > 0 && (
           <Text>{formatData(tableData)}</Text>
@@ -132,8 +151,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   button: {
-    width: 300,
+    width: 290,
     height: 60,
+    backgroundColor: '#007bff',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+  sbutton: {
+    width: 140,
+    height: 60,
+    margin: 5,
     backgroundColor: '#007bff',
     borderRadius: 30,
     justifyContent: 'center',
@@ -149,6 +183,18 @@ const styles = StyleSheet.create({
     width: 300, // Adjust as needed
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    alignItems: 'center',
+  },
+  scontainer: {
+    flexDirection: 'row', 
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
   },
 });
 

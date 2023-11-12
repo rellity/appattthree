@@ -30,7 +30,14 @@ const MainPage = ({ route,navigation }) => {
       >
         <Text style={styles.buttonText}>View Events</Text>
       </TouchableOpacity>
-
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('StudentLookupScreen');
+        }}
+      >
+        <Text style={styles.buttonText}>Student Lookup</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {

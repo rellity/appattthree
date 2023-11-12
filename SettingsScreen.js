@@ -51,7 +51,7 @@ const SettingsScreen = () => {
             onPress: async () => {
               try {
                 await SecureStore.setItemAsync('apiUrl', fullapiUrl);
-                navigation.navigate('MainPage', { updatedApiUrl: apiUrl });
+                navigation.navigate('MainPage', { updatedApiUrl: fullapiUrl });
                 ToastAndroid.showWithGravityAndOffset(
                   `API URL saved: ${fullapiUrl}`,
                   ToastAndroid.LONG,
