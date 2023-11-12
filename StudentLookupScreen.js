@@ -25,7 +25,10 @@ const StudentLookupScreen = () => {
         },
       });
   
-      if (response.data) {
+      if (response.data && response.data.error) {
+        // Check if the response contains an error property
+        Alert.alert('Student not found.');
+      } else if (response.data) {
         setStudentData(response.data);
         console.log(response.data);
   
@@ -41,7 +44,6 @@ const StudentLookupScreen = () => {
             setEventData(secondResponse.data);
             console.log('Second Response:', secondResponse.data);
   
-            // Third API call for calculating fines
             try {
               const fineUrl = `${apiUrl}/attappthree/calculate_fine.php`;
               const fineResponse = await axios.get(fineUrl, {
