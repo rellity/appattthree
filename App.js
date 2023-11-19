@@ -10,6 +10,8 @@ import BarCodeScanner from './BarcodeScanner';
 import AppHeader from './AppHeader'; // Import the custom header component
 import EventCreationScreen from './EventCreationScreen';
 import StudentLookupScreen from './StudentLookupScreen';
+import DataSyncScreen from './DataSyncScreen';
+import AccountsScreen from './AccountsScreen';
 
 
 const Stack = createStackNavigator();
@@ -27,13 +29,14 @@ function App() {
               headerRight: () => <AppHeader />, // Add the custom header to the headerRight
             }}
           />
-
+          <Stack.Screen name="AccountsScreen" component={AccountsScreen} options={{ title: ' ', headerShown: false }} />
           <Stack.Screen name="BarcodeGenerator" component={BarcodeGenerator} options={{ title: ' ' }} />
           <Stack.Screen name="BarcodeScanner" component={BarCodeScanner} options={{ title: ' ' }} />
           <Stack.Screen name="OptionSelector" component={OptionSelector} options={{ title: ' ' }} />
           <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: ' ' }} />
           <Stack.Screen name="EventCreationScreen" component={EventCreationScreen} options={{ title: ' ' }} />
           <Stack.Screen name="StudentLookupScreen" component={StudentLookupScreen} options={{ title: ' ' }} />
+          <Stack.Screen name="DataSyncScreen" component={DataSyncScreen} options={{ title: ' ' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApiUrlProvider>

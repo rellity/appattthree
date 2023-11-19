@@ -9,13 +9,14 @@ const StudentLookupScreen = () => {
   const [eventData, setEventData] = useState(null);
   const [fineData, setFineData] = useState(null);
   const { apiUrl } = useApiUrl();
+  
 
   const handleLookup = async () => {
     if (idNumber.trim() === '') {
       Alert.alert('Please enter an ID number.');
       return;
     }
-  
+    
     try {
       const compurl = `${apiUrl}/attappthree/student_lookup.php`;
   

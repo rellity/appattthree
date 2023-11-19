@@ -14,8 +14,32 @@ const OptionSelector = () => {
 
 
   const formatData = (data) => {
-    return data.map((item) => ` status: ${item.status} \n created on: ${item.createdon} \n created by: ${item.createdby}`).join('\n');
+    return data.map((item, index) => (
+      <View key={index} style={styles.row}>
+        <Text style={styles.label}>Status:</Text>
+        <Text style={[styles.value, item.status === 'ongoing' ? styles.ongoingText : styles.endedText]}>
+        {item.status}
+        </Text>
+        <Text style={styles.label}>Created on:</Text>
+        <Text style={styles.value}>{formatDate(item.createdon)}</Text>
+        <Text style={styles.label}>Created by:</Text>
+        <Text style={styles.value}>{item.createdby}</Text>
+      </View>
+    ));
   };
+
+  const formatDate = (dateString) => {
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    };
+    return new Date(dateString).toLocaleString('en-US', options);
+  };
+
 
   useEffect(() => {
     // fetch unsa pa
@@ -195,6 +219,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 20,
+  },
+  label: {
+    flex: 1,
+    color: '#000000',
+    marginRight: 8,
+  },
+  value: {
+    flex: 1,
+    color: '#61DAFB',
+  },
+  endedText: {
+    color: 'red', // or any color for ended status
   },
 });
 

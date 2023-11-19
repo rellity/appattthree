@@ -2,19 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert } from 'react-native';
 import axios from 'axios';
 import { Dialog } from '@rneui/themed';
-import * as SecureStore from 'expo-secure-store'; // Import SecureStore
+import { useApiUrl } from './ApiUrlContext';
 
 const BarcodeGenerator = () => {
   const [barcodeData, setBarcodeData] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const [isBarcodeDialogVisible, setBarcodeDialogVisible] = useState(false);
-  const [apiUrl, setApiUrl] = useState(''); // api url store???
+  const { apiUrl } = useApiUrl();
   const [error, setError] = useState(null); // New error state
 
   const generateBarcode = async () => {
     try {
-      if (!apiUrl) {
-        setError('API URL is not set.');
+      if (!inputValue) {
+        Alert.alert('Error', 'Input value cannot be blank.');
+        return;
+      }
+
+      if (!compurl) {
+        Alert.alert('Error', 'Wtf is this error.');
         return;
       }
   
@@ -27,11 +32,22 @@ const BarcodeGenerator = () => {
       setBarcodeData(response.data);
       setError(null);
   
-      // Open the barcode dialog automatically after setting the data
       openBarcodeDialog();
     } catch (error) {
-      setError('Error generating barcode.');
-      console.error(compurl, error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError('Server error. Please try again later.');
+        console.error(compurl, error.response.data);
+      } else if (error.request) {
+        // The request was made but no response was received
+        setError('Network error. Please check your internet connection.');
+        console.error(compurl, 'No response received');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError('An unexpected error occurred.');
+        console.error(compurl, error.message);
+      }
     }
   };
 
@@ -48,22 +64,6 @@ const BarcodeGenerator = () => {
   const closeBarcodeDialog = () => {
     setBarcodeDialogVisible(false);
   };
-
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        // Use SecureStore to retrieve the stored API URL
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-  }, []); // Empty dependency array means this effect runs once on mount
 
   return (
     <View style={styles.container}>

@@ -1,10 +1,23 @@
-import React from 'react';
+import React,{ useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import { useApiUrl } from './ApiUrlContext';
+import * as SecureStore from 'expo-secure-store';
 
 const MainPage = ({ route,navigation }) => {
   const { apiUrl } = useApiUrl();
   const updatedApiUrl = route.params ? route.params.updatedApiUrl : null;
+
+  useEffect(() => {
+    // Check if the user is logged in
+    SecureStore.getItemAsync('isLoggedIn')
+      .then((storedIsLoggedIn) => {
+        if (storedIsLoggedIn !== 'true') {
+          // If not logged in, navigate to the login screen
+          navigation.navigate('AccountsScreen');
+        }
+      })
+      .catch((error) => console.error('Error reading from SecureStore:', error));
+  }, [navigation]);
   
   return (
     <View style={styles.container}>
@@ -45,6 +58,15 @@ const MainPage = ({ route,navigation }) => {
         }}
       >
         <Text style={styles.buttonText}>API Settings</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => {
+          navigation.navigate('DataSyncScreen');
+        }}
+      >
+        <Text style={styles.buttonText}>Import SQL</Text>
       </TouchableOpacity>
       
     </View>

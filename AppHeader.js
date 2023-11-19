@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import IoniconsHeaderButton from './IoniconsHeaderButton';
 import { View, Text, Modal, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const DropdownMenu = ({ menuItems, onSelect, isOpen, onClose }) => {
   if (!isOpen) {
@@ -57,13 +58,14 @@ const DropdownMenu = ({ menuItems, onSelect, isOpen, onClose }) => {
   );
 };
 
-const AppHeader = ({ navigation }) => {
+const AppHeader = () => {
   const [isMenuVisible, setMenuVisible] = useState(false);
   const menuItems = [
     { id: 'account', title: 'Account' },
     { id: 'about', title: 'About Us' },
   ];
   const [selectedOption, setSelectedOption] = useState(null);
+  const navigation = useNavigation(); // Use the useNavigation hook here
 
   const toggleMenu = () => {
     setMenuVisible(!isMenuVisible);
@@ -72,11 +74,13 @@ const AppHeader = ({ navigation }) => {
   const handleMenuItemPress = (item) => {
     setSelectedOption(item);
     setMenuVisible(false);
-  };
 
-  const showAccountDialog = () => {
-    setSelectedOption('account');
-    setMenuVisible(false);
+    // Navigate to the corresponding screen based on the selected option
+    if (item === 'account') {
+      navigation.navigate('AccountsScreen');
+    } else if (item === 'about') {
+      navigation.navigate('AboutScreen');
+    }
   };
 
   return (

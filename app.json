@@ -23,9 +23,9 @@
         {
           "cameraPermission": "Allow $(PRODUCT_NAME) to access camera."
         }
-      ]
+      ],
+      ["./plugins/withBetterSecuritySettings.js"]
     ],
-    
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -42,7 +42,11 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": [
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE" 
       ],
       "package": "com.tbasag4.attappthree"
     },
