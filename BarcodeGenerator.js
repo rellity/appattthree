@@ -18,16 +18,18 @@ const BarcodeGenerator = () => {
         return;
       }
 
-      if (!compurl) {
-        Alert.alert('Error', 'Wtf is this error.');
-        return;
-      }
+      
   
       const compurl = `${apiUrl}/attappthree/barcode.php`;
   
       const response = await axios.get(compurl, {
         params: { value: inputValue },
       });
+
+      if (!compurl) {
+        Alert.alert('Error', 'server error');
+        return;
+      }
   
       setBarcodeData(response.data);
       setError(null);

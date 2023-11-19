@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert,TouchableOpacity, StyleSheet, } from 'react-native';
+import { View, Text, Alert,TouchableOpacity, StyleSheet, ToastAndroid } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
+import LoaderView from './LoaderView';
 
 const OptionSelector = () => {
   const { apiUrl } = useApiUrl();
@@ -11,6 +12,8 @@ const OptionSelector = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [tableData, setTableData] = useState([]);
   const navigation = useNavigation();
+  const [isLoading, setLoading] = useState(false); //loading animation flag
+
 
 
   const formatData = (data) => {
@@ -46,15 +49,32 @@ const OptionSelector = () => {
     fetchOptions();
   }, []);
 
-  const fetchOptions = async () => {
-    try {
-      const response = await axios.get(`${apiUrl}/attappthree/getOptions.php`);
-      const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
-      setOptions(response.data);
-    } catch (error) {
-      Alert.alert('Error fetching options:', error);
-    }
+  const fetchOptions = () => {
+    return new Promise(async (resolve, reject) => {
+      setLoading(true);
+
+      try {
+        const response = await axios.get(`${apiUrl}/attappthree/getOptions.php`);
+        const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
+        setOptions(response.data);
+        setLoading(false); // Set loading to false when the request is successful
+        resolve(optionsArray); // Resolve the Promise with the options data
+      } catch (error) {
+        setLoading(false); // Set loading to false when there's an error
+        const errorMessage = `error fetching options: network error`;
+        console.error(errorMessage);
+        ToastAndroid.showWithGravityAndOffset(
+          errorMessage,
+          ToastAndroid.LONG,
+          ToastAndroid.BOTTOM,
+          25,
+          50
+        );
+        reject(error); // Reject the Promise with the error
+      }
+    });
   };
+  
 
   
 
@@ -156,6 +176,14 @@ const OptionSelector = () => {
           <Text>{formatData(tableData)}</Text>
       )}
 
+      {/* Loading Modal */}
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <View style={styles.top}>
+            <LoaderView isActive={isLoading} />
+          </View>
+        </View>
+      )}
       
     </View>
   );
@@ -231,6 +259,23 @@ const styles = StyleSheet.create({
   },
   endedText: {
     color: 'red', // or any color for ended status
+  },
+  loadingContainer: {
+    marginTop: 250,
+    position: 'absolute',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+  },
+  top: {
+    flex: 0.3,
+    backgroundColor: 'white',
+    borderWidth: 3,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
 });
 

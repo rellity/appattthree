@@ -99,7 +99,7 @@ export default function App() {
         setScanned(true);
         setLoading(true);
   
-        // Async operations
+        
         try {
           const result = await fetchStudentDetails(data);
           if (result && result.studentInfo) {
@@ -125,9 +125,19 @@ export default function App() {
             Alert.alert('Student Not Found', `No data found for ID: ${data}`);
           }
         } catch (error) {
-          Alert.alert('Error', 'An error occurred while fetching student details.');
+          setAlertVisible(true);
+          Alert.alert('Error', 'Student ID not Registered.', [
+            {
+              text: 'OK',
+              onPress: () => {
+                setScanned(false);
+                setAlertVisible(false);
+              },
+            },
+          ]
+          );
         }
-  
+        
         setLoading(false);
       } else {
         // eror toat
