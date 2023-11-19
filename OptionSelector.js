@@ -57,10 +57,10 @@ const OptionSelector = () => {
         const response = await axios.get(`${apiUrl}/attappthree/getOptions.php`);
         const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
         setOptions(response.data);
-        setLoading(false); // Set loading to false when the request is successful
-        resolve(optionsArray); // Resolve the Promise with the options data
+        setLoading(false); 
+        resolve(optionsArray); // make the promise come true
       } catch (error) {
-        setLoading(false); // Set loading to false when there's an error
+        setLoading(false);
         const errorMessage = `error fetching options: network error`;
         console.error(errorMessage);
         ToastAndroid.showWithGravityAndOffset(
@@ -70,9 +70,10 @@ const OptionSelector = () => {
           25,
           50
         );
-        reject(error); // Reject the Promise with the error
+        reject(error); //reject promise
       }
     });
+    // mannnnnnnn, promise2 atay alas 11:44 sa gabii wa koy gibuthat kundi mag program ani
   };
   
 

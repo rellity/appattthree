@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, BackHandler, ToastAndroid } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { Checkbox, Card } from 'react-native-paper';
@@ -76,13 +76,13 @@ const AccountsScreen = ({navigation}) => {
 
     case 'officer':
       content = (
-        <Card style={styles.card}>
+        <View style={styles.loginContainer1}>
           <Card.Title title="Officer" />
           <Card.Content>
             <Text>You are an officer</Text>
             <Text>Job Description: Summarized description of officer's job</Text>
           </Card.Content>
-        </Card>
+        </View>
       );
       break;
 
@@ -214,7 +214,9 @@ const AccountsScreen = ({navigation}) => {
       {isLoggedIn ? (
           <View style={styles.loggedInContainer}>
           <Text style={styles.welcomeText}>Welcome, {accountName}!</Text>
-          <Button title="Logout" onPress={handleLogout} />
+          <TouchableOpacity style={styles.loginButton2} onPress={handleLogout}>
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
       
           {userRole && (
             <View>
@@ -264,7 +266,9 @@ const AccountsScreen = ({navigation}) => {
             <Text>Remember Password</Text>
           </View>
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <TouchableOpacity style={styles.loginButton} onPress={() => {
+              handleLogin();
+            }}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
         </View>
@@ -276,7 +280,6 @@ const AccountsScreen = ({navigation}) => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -360,6 +363,25 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     alignItems: 'center',
+  },
+  loginButton2: {
+    width: '100%',
+    backgroundColor: '#3498db',
+    padding: 15,
+    borderRadius: 5,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    alignItems: 'center',
+  },
+  loginContainer1: {
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+    borderBottomLeftRadius: 0, 
+    borderBottomRightRadius: 0, 
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
   },
 });
 

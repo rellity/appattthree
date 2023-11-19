@@ -3,6 +3,7 @@ import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert } from 'rea
 import axios from 'axios';
 import { Dialog } from '@rneui/themed';
 import { useApiUrl } from './ApiUrlContext';
+import LoaderView from './LoaderView';
 
 const BarcodeGenerator = () => {
   const [barcodeData, setBarcodeData] = useState(null);
@@ -10,6 +11,8 @@ const BarcodeGenerator = () => {
   const [isBarcodeDialogVisible, setBarcodeDialogVisible] = useState(false);
   const { apiUrl } = useApiUrl();
   const [error, setError] = useState(null); // New error state
+  const [isLoading, setLoading] = useState(false); //loading animation flag
+
 
   const generateBarcode = async () => {
     try {
@@ -18,38 +21,40 @@ const BarcodeGenerator = () => {
         return;
       }
 
-      
+      if (inputValue.length !== 9) {
+        Alert.alert('Error', 'Input value (xxxxxxx-x) should have exactly 9 characters.');
+        return;
+      }
+  
+      setLoading(true);
   
       const compurl = `${apiUrl}/attappthree/barcode.php`;
   
       const response = await axios.get(compurl, {
         params: { value: inputValue },
       });
-
+  
       if (!compurl) {
-        Alert.alert('Error', 'server error');
+        Alert.alert('Error', 'Server error');
         return;
       }
   
       setBarcodeData(response.data);
       setError(null);
-  
       openBarcodeDialog();
     } catch (error) {
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        setError('Server error. Please try again later.');
-        console.error(compurl, error.response.data);
+        Alert.alert('Server error. Please try again later.');
+        console.error(error.response.data);
       } else if (error.request) {
-        // The request was made but no response was received
-        setError('Network error. Please check your internet connection.');
-        console.error(compurl, 'No response received');
+        
+        Alert.alert('No response received', 'Please check your internet/api connection');
       } else {
-        // Something happened in setting up the request that triggered an Error
-        setError('An unexpected error occurred.');
-        console.error(compurl, error.message);
+        Alert.alert('An unexpected error occurred.');
+        console.error(error.message);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,6 +113,15 @@ const BarcodeGenerator = () => {
           <Dialog.Button title="Close" onPress={closeBarcodeDialog} />
         </Dialog.Actions>
       </Dialog>
+
+      {/* Loading Modal */}
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <View style={styles.top}>
+            <LoaderView isActive={isLoading} />
+          </View>
+        </View>
+      )}
     </View>
   );
 };
@@ -175,6 +189,23 @@ const styles = StyleSheet.create({
   barcodeImage: {
     width: 200,
     height: 100,
+  },
+
+  loadingContainer: {
+    position: 'absolute',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
+  },
+  top: {
+    flex: 0.3,
+    backgroundColor: 'white',
+    borderWidth: 3,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
 });
 
