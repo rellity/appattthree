@@ -1,4 +1,4 @@
-import React,{ useEffect } from 'react';
+import React,{ useEffect, useState } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import { useApiUrl } from './ApiUrlContext';
 import * as SecureStore from 'expo-secure-store';
@@ -17,8 +17,9 @@ const MainPage = ({ route,navigation }) => {
         }
       })
       .catch((error) => console.error('Error reading from SecureStore:', error));
+
   }, [navigation]);
-  
+
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -28,7 +29,7 @@ const MainPage = ({ route,navigation }) => {
         resizeMode="contain" // Preserve aspect ratio
       />
       
-      <Text>API URL: {updatedApiUrl || apiUrl}</Text>
+      <Text>API URL: { updatedApiUrl || apiUrl }</Text>
 
       {/* Buttons */}
       <TouchableOpacity

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
+import * as SecureStore from 'expo-secure-store'
 
 const StudentLookupScreen = () => {
   const [idNumber, setIdNumber] = useState('');
@@ -9,7 +10,26 @@ const StudentLookupScreen = () => {
   const [eventData, setEventData] = useState(null);
   const [fineData, setFineData] = useState(null);
   const { apiUrl } = useApiUrl();
+  const [api, setApiUrl] = useState('')
   
+  useEffect(() => {
+    const fetchApiUrl = async () => {
+      try {
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchApiUrl();
+  }, []);
+
+  const check = [api || apiUrl];
+  console.log(check);
+
 
   const handleLookup = async () => {
     if (idNumber.trim() === '') {
@@ -18,7 +38,7 @@ const StudentLookupScreen = () => {
     }
     
     try {
-      const compurl = `${apiUrl}/attappthree/student_lookup.php`;
+      const compurl = `${check}/attappthree/student_lookup.php`;
   
       const response = await axios.get(compurl, {
         params: {
@@ -34,7 +54,7 @@ const StudentLookupScreen = () => {
         console.log(response.data);
   
         try {
-          const eventUrl = `${apiUrl}/attappthree/event_lookup.php`;
+          const eventUrl = `${check}/attappthree/event_lookup.php`;
           const secondResponse = await axios.get(eventUrl, {
             params: {
               id: idNumber,
@@ -46,7 +66,7 @@ const StudentLookupScreen = () => {
             console.log('Second Response:', secondResponse.data);
   
             try {
-              const fineUrl = `${apiUrl}/attappthree/calculate_fine.php`;
+              const fineUrl = `${check}/attappthree/calculate_fine.php`;
               const fineResponse = await axios.get(fineUrl, {
                 params: {
                   id: idNumber,

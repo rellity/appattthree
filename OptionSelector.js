@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
 import LoaderView from './LoaderView';
+import * as SecureStore from 'expo-secure-store'
 
 const OptionSelector = () => {
   const { apiUrl } = useApiUrl();
@@ -13,8 +14,40 @@ const OptionSelector = () => {
   const [tableData, setTableData] = useState([]);
   const navigation = useNavigation();
   const [isLoading, setLoading] = useState(false); //loading animation flag
+  const [api, setApiUrl] = useState(null);
 
-
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        ToastAndroid.show('Fetching API URL...', ToastAndroid.SHORT);
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+          console.log('Stored API:', storedApiUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+  
+    fetchData();
+  }, []); 
+  
+  useEffect(() => {
+    if (api) {
+      console.log('api:', api);
+      fetchOptions();
+    }
+  }, [api]); 
+  
+  useEffect(() => {
+    if (api) {
+      console.log('api:', api);
+      fetchOptions();
+    }
+  }, [apiUrl]); 
+  
+  const check = [api || apiUrl];
 
   const formatData = (data) => {
     return data.map((item, index) => (
@@ -42,23 +75,19 @@ const OptionSelector = () => {
     };
     return new Date(dateString).toLocaleString('en-US', options);
   };
-
-
-  useEffect(() => {
-    // fetch unsa pa
-    fetchOptions();
-  }, []);
-
+  
   const fetchOptions = () => {
     return new Promise(async (resolve, reject) => {
       setLoading(true);
-
+      
       try {
-        const response = await axios.get(`${apiUrl}/attappthree/getOptions.php`);
+        const check = [api || apiUrl];
+        const response = await axios.get(`${check}/attappthree/getOptions.php`);
         const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
         setOptions(response.data);
         setLoading(false); 
         resolve(optionsArray); // make the promise come true
+        ToastAndroid.show('done!', ToastAndroid.SHORT)
       } catch (error) {
         setLoading(false);
         const errorMessage = `error fetching options: network error`;
@@ -84,11 +113,12 @@ const OptionSelector = () => {
     setSelectedOption(itemValue);
 
     console.log('Selected option:', itemValue);
+    
   
     try {
       if (itemValue) {
-
-        const responselink = `${apiUrl}/attappthree/getOptionsInfo.php`;
+        const check = api || apiUrl;
+        const responselink = `${check}/attappthree/getOptionsInfo.php`;
 
         const response = await axios.get(responselink,{ params: {value: itemValue},});
   
@@ -177,12 +207,14 @@ const OptionSelector = () => {
           <Text>{formatData(tableData)}</Text>
       )}
 
-      {/* Loading Modal */}
+      {/* loading animal */}
       {isLoading && (
+        <View style={styles.overlay}>
         <View style={styles.loadingContainer}>
           <View style={styles.top}>
             <LoaderView isActive={isLoading} />
           </View>
+        </View>
         </View>
       )}
       
@@ -277,6 +309,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

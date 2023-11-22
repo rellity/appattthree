@@ -8,6 +8,7 @@ const LoaderView = ({ isActive }) => {
       <LottieView
         source={require('./loader1.json')}
         autoPlay
+        loop
       />
     </View>
   ) : null;

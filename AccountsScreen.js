@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useCallback, } from 'react';
+import React, { useState, useEffect, } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, BackHandler, ToastAndroid } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { Checkbox, Card } from 'react-native-paper';
 import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { useFocusEffect } from '@react-navigation/native';
 
 const AccountsScreen = ({navigation}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -18,36 +17,25 @@ const AccountsScreen = ({navigation}) => {
   const [userRole, setUserRole] = useState('');
   let content;
 
-  const onBackPress = useCallback(async () => {
-    // Check if the user is logged in
-    const isLoggedIn = await SecureStore.getItemAsync('isLoggedIn');
-
-    // If the user is logged in, allow back navigation
-    if (isLoggedIn === 'true') {
+  const onBackPress = () => {
+    if (isLoggedIn) {
       return false;
     } else {
-      // If the user is not logged in, prevent back navigation
       return true;
     }
-  }, []);
+  };
 
   useEffect(() => {
+    const addBackPressListener = () => {
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    };
+
+    addBackPressListener();
 
     return () => {
-      
       BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     };
-  }, [onBackPress]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
-      return () => {
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      };
-    }, [onBackPress])
-  );
+  }, [onBackPress, isLoggedIn]);
 
 
   // focused idk
@@ -99,20 +87,24 @@ const AccountsScreen = ({navigation}) => {
   }
 
   useEffect(() => {
-    // Check if there's a stored login state
     SecureStore.getItemAsync('isLoggedIn')
-      .then((storedIsLoggedIn) => {
-        if (storedIsLoggedIn === 'true') {
-          setIsLoggedIn(true);
-          SecureStore.getItemAsync('accountName').then((storedAccountName) => {
-            setAccountName(storedAccountName);
-          });
-          SecureStore.getItemAsync('accprev').then((storedAccprev) => {
-            setUserRole(storedAccprev);
-          });
-        }
-      })
-      .catch((error) => console.error('Error reading from SecureStore:', error));
+    .then((storedIsLoggedIn) => {
+      const isLoggedIn = storedIsLoggedIn === 'true' || storedIsLoggedIn === true;
+      setIsLoggedIn(isLoggedIn);
+
+      if (isLoggedIn) {
+        SecureStore.getItemAsync('accountName').then((storedAccountName) => {
+          setAccountName(storedAccountName);
+        });
+
+        SecureStore.getItemAsync('accprev').then((storedAccprev) => {
+          setUserRole(storedAccprev);
+        });
+
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }
+    })
+    .catch((error) => console.error('Error reading from SecureStore:', error));
 
     // check stored password
     SecureStore.getItemAsync('password')
@@ -199,12 +191,10 @@ const AccountsScreen = ({navigation}) => {
     setIsLoggedIn(false);
     setAccountName('');
     setUsername('');
-    setRememberPassword(false);
   
     // wipe stored login state, account name, password, and accprev
     await SecureStore.deleteItemAsync('isLoggedIn');
     await SecureStore.deleteItemAsync('accountName');
-    await SecureStore.deleteItemAsync('password');
     await SecureStore.deleteItemAsync('accprev');
     setUserRole('');
   };
@@ -253,7 +243,7 @@ const AccountsScreen = ({navigation}) => {
                 style={styles.showPasswordButton}
                 onPress={() => setShowPassword(!showPassword)}
               >
-                {/* mata for password */}
+                {/* icon sa remember password */}
                 <Icon name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#3498db" />
               </TouchableOpacity>
             </View>

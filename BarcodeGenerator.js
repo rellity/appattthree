@@ -1,18 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert } from 'react-native';
+import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert,Platform } from 'react-native';
 import axios from 'axios';
 import { Dialog } from '@rneui/themed';
 import { useApiUrl } from './ApiUrlContext';
 import LoaderView from './LoaderView';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
+import * as SecureStore from 'expo-secure-store'
 
-const BarcodeGenerator = () => {
+function BarcodeGenerator() {
   const [barcodeData, setBarcodeData] = useState(null);
   const [inputValue, setInputValue] = useState('');
   const [isBarcodeDialogVisible, setBarcodeDialogVisible] = useState(false);
   const { apiUrl } = useApiUrl();
-  const [error, setError] = useState(null); // New error state
+  const [error, setError] = useState(null); 
   const [isLoading, setLoading] = useState(false); //loading animation flag
+  const [imageUri, setImageUri] = useState(null);
+  const [api, setApiUrl] = useState('')
 
+
+  useEffect(() => {
+    const fetchApiUrl = async () => {
+      try {
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchApiUrl();
+    console.log({api});
+  }, []);
+
+  const check = [ api || apiUrl ];
+  console.log(check);
+
+  useEffect(() => {
+    (async () => {
+      // Request permission to access media library
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permission to access media library is required.');
+      }
+    })();
+  }, []);
 
   const generateBarcode = async () => {
     try {
@@ -25,29 +60,42 @@ const BarcodeGenerator = () => {
         Alert.alert('Error', 'Input value (xxxxxxx-x) should have exactly 9 characters.');
         return;
       }
-  
+
       setLoading(true);
-  
-      const compurl = `${apiUrl}/attappthree/barcode.php`;
-  
+      const check = [ api || apiUrl ];
+
+      const compurl = `${check}/attappthree/barcode.php`;
+
       const response = await axios.get(compurl, {
         params: { value: inputValue },
       });
-  
+
+      
+
       if (!compurl) {
         Alert.alert('Error', 'Server error');
         return;
       }
-  
+
       setBarcodeData(response.data);
+      // Save the image to a local file with a proper extension
+      const localUri = `${FileSystem.documentDirectory}barcode.png`;
+      await FileSystem.writeAsStringAsync(localUri, response.data.barcodeImage, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Set the image URI for sharing
+      setImageUri(localUri);
+      console.log(localUri);
       setError(null);
       openBarcodeDialog();
+
     } catch (error) {
       if (error.response) {
         Alert.alert('Server error. Please try again later.');
         console.error(error.response.data);
       } else if (error.request) {
-        
+
         Alert.alert('No response received', 'Please check your internet/api connection');
       } else {
         Alert.alert('An unexpected error occurred.');
@@ -72,6 +120,32 @@ const BarcodeGenerator = () => {
     setBarcodeDialogVisible(false);
   };
 
+  const handleShare = async () => {
+    try {
+      if (!imageUri) {
+        console.error('Image URI is missing.');
+        return;
+      }
+  
+      // Request permission to access media library
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permission to access media library is required.');
+        return;
+      }
+  
+      // Save the image to the app's document directory
+      const asset = await MediaLibrary.createAssetAsync(imageUri);
+  
+      // Share the saved image
+      await Sharing.shareAsync(asset.uri);
+  
+      setImageUri(null);
+    } catch (error) {
+      console.error('Error sharing:', error.message);
+    }
+  };
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Barcode Generator</Text>
@@ -80,8 +154,7 @@ const BarcodeGenerator = () => {
         value={inputValue}
         onChangeText={handleInputChange}
         maxLength={9}
-        style={styles.input}
-      />
+        style={styles.input} />
       <TouchableOpacity
         style={styles.generateButton}
         onPress={generateBarcode}
@@ -102,11 +175,20 @@ const BarcodeGenerator = () => {
                 uri: `data:image/png;base64,${barcodeData.barcodeImage}`,
               }}
               style={styles.barcodeImage}
-              resizeMode="contain"
-            />
+              resizeMode="contain" />
+
+            
 
             <Text style={styles.footerText}>ICTS 2023-2024</Text>
-            
+
+            {/* Add a button for downloading the image */}
+            <TouchableOpacity
+              style={styles.downloadButton}
+              onPress={handleShare}
+            >
+              <Text style={styles.downloadButtonText}>Share Barcode</Text>
+            </TouchableOpacity>
+
           </View>
         )}
         <Dialog.Actions>
@@ -114,17 +196,19 @@ const BarcodeGenerator = () => {
         </Dialog.Actions>
       </Dialog>
 
-      {/* Loading Modal */}
+      {/* loading animal */}
       {isLoading && (
-        <View style={styles.loadingContainer}>
-          <View style={styles.top}>
-            <LoaderView isActive={isLoading} />
+        <View style={styles.overlay}>
+          <View style={styles.loadingContainer}>
+            <View style={styles.top}>
+              <LoaderView isActive={isLoading} />
+            </View>
           </View>
         </View>
       )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -206,6 +290,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

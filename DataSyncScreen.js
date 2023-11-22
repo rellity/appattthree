@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, Linking, Share } from 'react-native';
 import { Button, Card, Title, Paragraph } from 'react-native-paper';
 import * as DocumentPicker from 'expo-document-picker';
@@ -6,11 +6,31 @@ import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import * as WebBrowser from 'expo-web-browser';
 import { FontAwesome } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 
 const DataSyncScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState(null);
   const { apiUrl } = useApiUrl();
+  const [api, setApiUrl] = useState('')
+
+  useEffect(() => {
+    const fetchApiUrl = async () => {
+      try {
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchApiUrl();
+  }, []);
+
+  const check = [api || apiUrl];
+
 
   const handleImport = async () => {
     try {
@@ -28,7 +48,7 @@ const DataSyncScreen = () => {
   
       formData.append('sqlFile', file);
   
-      const compurl = `${apiUrl}/attappthree/import_data.php`
+      const compurl = `${check}/attappthree/import_data.php`
       const response = await axios.post( compurl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -76,7 +96,7 @@ const DataSyncScreen = () => {
           text: 'Export',
           onPress: () => {
             // User pressed Export, proceed with opening the browser
-            const exportUrl = `${apiUrl}/attappthree/export_data.php`;
+            const exportUrl = `${check}/attappthree/export_data.php`;
             WebBrowser.openBrowserAsync(exportUrl)
               .then(result => {
                 if (result.type === 'cancel') {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, KeyboardAvoidingView } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import LoaderView from './LoaderView';
 import { useRoute } from '@react-navigation/native';
@@ -8,6 +8,9 @@ import { useApiUrl } from './ApiUrlContext';
 import { Camera } from 'expo-camera';
 import Modal from 'react-native-modal';
 import { useNavigation } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store';
+import { Entypo, MaterialIcons } from '@expo/vector-icons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function App() {
   const { apiUrl } = useApiUrl();
@@ -20,9 +23,29 @@ export default function App() {
   const route = useRoute();
   const selectedTable = route.params.selectedTable;
   const navigation = useNavigation();
+  const [api, setApiUrl] = useState('');
+  const [flashMode, setFlashMode] = useState(false);
+
 
 
   useEffect(() => {
+    const fetchApiUrl = async () => {
+      try {
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchApiUrl();
+  }, []);
+
+
+  useEffect(() => {
+    
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
@@ -33,6 +56,8 @@ export default function App() {
     })();
   }, []);
 
+  
+
   const handleData = async (data) => {
     if (isLoading) {[[[]]]
       return;
@@ -40,7 +65,8 @@ export default function App() {
     setLoading(true);
   
     try {
-      const userResponse = await axios.get(`${apiUrl}/attappthree/stuidcheck.php`, {
+      const check = [api || apiUrl];
+      const userResponse = await axios.get(`${check}/attappthree/stuidcheck.php`, {
         params: {
           stuid: data,
         },
@@ -48,7 +74,7 @@ export default function App() {
   
       if (userResponse.data.valid) {
         // If 'stuid' is valid in the 'user' table, proceed with the API call
-        const response = await axios.get(`${apiUrl}/attappthree/scanres.php`, {
+        const response = await axios.get(`${check}/attappthree/scanres.php`, {
           params: {
             scannedData: data,
             selectedTable: selectedTable,
@@ -154,8 +180,9 @@ export default function App() {
   };
   
   const fetchStudentDetails = async (barcodeData) => {
+    const check = [api || apiUrl];
     return new Promise((resolve, reject) => {
-      axios.get(`${apiUrl}/attappthree/namecheck.php?studentId=${barcodeData}`)
+      axios.get(`${check}/attappthree/namecheck.php?studentId=${barcodeData}`)
         .then(response => {
           if (response && response.data && response.data.studentInfo) {
             resolve(response.data);
@@ -172,16 +199,16 @@ export default function App() {
 
   const renderCamera = () => {
     return (
-      <View style={styles.cameraContainer}>
+      <KeyboardAvoidingView style={styles.cameraContainer}>
         <Camera
           style={styles.camera}
           type={Camera.Constants.Type.back}
           onBarCodeScanned={scanned && !showManualInput ? undefined : handleBarCodeScanned}
+          ref={(ref) => { this.camera = ref }}
+          flashMode={flashMode ? Camera.Constants.FlashMode.torch : Camera.Constants.FlashMode.off}
         />
-        <View style={styles.highlightContainer}>
-          <View style={styles.highlight} />
-        </View>
-      </View>
+        
+      </KeyboardAvoidingView>
     );
   };
   
@@ -199,84 +226,107 @@ export default function App() {
       </View>
     );
   }
+  
+  
 
   return (
+    <KeyboardAwareScrollView
+    style={{ flex: 1, backgroundColor: 'black' }} // Set background color to your preference
+    resetScrollToCoords={{ x: 0, y: 0 }}
+    contentContainerStyle={{ flex: 1 }}
+    scrollEnabled={false}
+    >
     <View style={styles.container}>
       <View style={styles.cameraContainer}>
         {renderCamera()}
-        <TouchableOpacity style={styles.buttonText} onPress={() => {
-          setShowManualInput(true);
-        }}>
-          <Text>Open Modal</Text>
-        </TouchableOpacity>
-        <Modal
-        isVisible={showManualInput}
-        onBackdropPress={() => setShowManualInput(false)}
-        style={styles.modal}
-        >
-        <View style={styles.modalContent}>
-          <TextInput
-            style={styles.manualInput}
-            placeholder="Enter barcode manually (e.g., 1234567-8)"
-            value={manualInput}
-            onChangeText={text => setManualInput(text)}
-          />
-            <TouchableOpacity
-              style={styles.button}
-              onPress={async () => {
-                if (manualInput.trim() && /^\d{0,7}-?\d{0,1}$/.test(manualInput)) {
-                  // Make the API call
-                  try {
-                    const response = await axios.get(`${apiUrl}/attappthree/namecheck.php`, {
-                      params: {
-                        studentId: manualInput,
-                      },
-                    });
-
-                    if (response.data && response.data.success) {
-                      // Assuming response contains the desired student info, update state or show data
-                      console.log(response.data.studentInfo);
-                      // Set your state to handle the student information
-                      const studentName = response.data.studentInfo.name;
-                      Alert.alert(
-                        'Student Data',
-                        `Student ID: ${manualInput}\nStudent Name: ${studentName}`,
-                        [
-                          {
-                            text: 'Cancel',
-                            onPress: () => console.log('Cancel Pressed'),
-                            style: 'cancel',
-                          },
-                          {
-                            text: 'OK',
-                            onPress: () => {
-                              handleData(manualInput);
-                            },
-                          },
-                        ],
-                      );
-                    } else {
-                      Alert.alert( 
-                        'Student Data', 
-                        `${manualInput} is not registered.`);
-                    }
-                  } catch (error) {
-                    alert('Error retrieving student data.');
-                  }
-                } else {
-                  if (manualInput.trim()) {
-                    alert('Invalid id format. Please enter in the correct format "xxxxxxx-x".');
-                  } else {
-                    alert('Please enter a valid SLSU id number.');
-                  }
-                }
-                setShowManualInput(false);
-              }}
-            >
-              <Text style={styles.buttonText}>Submit</Text>
-            </TouchableOpacity>
+        <View style={styles.highlightContainer}>
+          <View style={styles.highlight} />
         </View>
+        <View style={styles.manualInputContainer}>
+          <TouchableOpacity onPress={() => setFlashMode(!flashMode)}>
+          <Entypo
+            name="flashlight"
+            size={50}
+            color={flashMode ? "#ffff00" : "#fff"} 
+            style={{ marginBottom: 100, marginRight: 50 }}
+          />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {
+            setShowManualInput(true);
+          }}>
+            <MaterialIcons name="input" size={50} color="white" style={{ marginBottom: 100, marginLeft: 50 }}/>
+          </TouchableOpacity>
+          
+          <Modal
+          isVisible={showManualInput}
+          onBackdropPress={() => setShowManualInput(false)}
+          style={styles.modal}
+          >
+          <View style={styles.modalContent}>
+            <TextInput
+              style={styles.manualInput}
+              placeholder="Enter barcode manually (e.g., 1234567-8)"
+              value={manualInput}
+              onChangeText={text => setManualInput(text)}
+            />
+              <TouchableOpacity
+                style={styles.button}
+                onPress={async () => {
+                  if (manualInput.trim() && /^\d{0,7}-?\d{0,1}$/.test(manualInput)) {
+                    // Make the API call
+                    try {
+                      const check = [api || apiUrl];
+                      const response = await axios.get(`${check}/attappthree/namecheck.php`, {
+                        params: {
+                          studentId: manualInput,
+                        },
+                      });
+
+                      if (response.data && response.data.success) {
+                        // Assuming response contains the desired student info, update state or show data
+                        console.log(response.data.studentInfo);
+                        // Set your state to handle the student information
+                        const studentName = response.data.studentInfo.name;
+                        Alert.alert(
+                          'Student Data',
+                          `Student ID: ${manualInput}\nStudent Name: ${studentName}`,
+                          [
+                            {
+                              text: 'Cancel',
+                              onPress: () => console.log('Cancel Pressed'),
+                              style: 'cancel',
+                            },
+                            {
+                              text: 'OK',
+                              onPress: () => {
+                                handleData(manualInput);
+                              },
+                            },
+                          ],
+                        );
+                      } else {
+                        Alert.alert( 
+                          'Student Data', 
+                          `${manualInput} is not registered.`);
+                      }
+                    } catch (error) {
+                      alert('Error retrieving student data.');
+                    }
+                  } else {
+                    if (manualInput.trim()) {
+                      alert('Invalid id format. Please enter in the correct format "xxxxxxx-x".');
+                    } else {
+                      alert('Please enter a valid SLSU id number.');
+                    }
+                  }
+                  setShowManualInput(false);
+                }}
+              >
+                <Text style={styles.buttonText}>Submit</Text>
+              </TouchableOpacity>
+          </View>
       </Modal>
+      </View>
       </View>
   
       {/* Loading Modal */}
@@ -288,6 +338,7 @@ export default function App() {
         </View>
       )}
     </View>
+    </KeyboardAwareScrollView>
   );
   
 }
@@ -318,17 +369,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   highlightContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   highlight: {
-    width: '80%',
-    aspectRatio: 1,
+    width: 260,
+    height: 200,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: 'white',
-    borderRadius: 10,
-    position: 'absolute',
+    borderColor: 'rgba(255,255,255,0.8)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -345,17 +400,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  buttonTextex: {
+    backgroundColor: 'blue', // Adjust the background color
+    padding: 10,
+    borderRadius: 5,
+    position: 'absolute',
+    bottom: 20,
+    alignSelf: 'center',
+    elevation: 5,
+  },
   manualInputContainer: {
-    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 100, // Adjust this value to position it below the highlight container
+    width: '100%',
+    alignItems: 'center',
   },
   manualInput: {
-    width: '80%',
+    width: 300,
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
+  },
+  button: {
+    backgroundColor: 'blue',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 5,
   },
   loadingContainer: {
     position: 'absolute',
@@ -393,17 +468,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
-  },
-  button: {
-    backgroundColor: 'blue',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 
 });

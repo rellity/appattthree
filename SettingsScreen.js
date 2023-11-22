@@ -81,6 +81,13 @@ const SettingsScreen = () => {
     }
   };
 
+  const handleResetStack = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainPage' }],
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Card containerStyle={styles.cardContainer}>
@@ -115,6 +122,21 @@ const SettingsScreen = () => {
           onPress={handleSave}
         >
           <Text style={{ color: 'white', fontSize: 16 }}>Save</Text>
+        </TouchableHighlight>
+
+        <TouchableHighlight
+          style={{
+            backgroundColor: '#3498db',
+            padding: 15,
+            borderRadius: 5,
+            marginTop: 20,
+            width: '100%',
+            alignItems: 'center',
+          }}
+          underlayColor="#2980b9"
+          onPress={handleResetStack}
+        >
+          <Text style={{ color: 'white', fontSize: 16 }}>Reset</Text>
         </TouchableHighlight>
       </Card>
     </View>
