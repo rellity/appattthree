@@ -61,15 +61,6 @@ const MainPage = ({ route,navigation }) => {
         <Text style={styles.buttonText}>API Settings</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-          navigation.navigate('DataSyncScreen');
-        }}
-      >
-        <Text style={styles.buttonText}>Import SQL</Text>
-      </TouchableOpacity>
-      
     </View>
   );
 };

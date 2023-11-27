@@ -4,7 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
-import LoaderView from './LoaderView';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import * as SecureStore from 'expo-secure-store'
 
 const OptionSelector = () => {
@@ -13,8 +13,9 @@ const OptionSelector = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [tableData, setTableData] = useState([]);
   const navigation = useNavigation();
-  const [isLoading, setLoading] = useState(false); //loading animation flag
+  const [showLoading, setShowLoading] = useState(false);
   const [api, setApiUrl] = useState(null);
+  const [selectedLog, setselectedLog] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,14 +53,28 @@ const OptionSelector = () => {
   const formatData = (data) => {
     return data.map((item, index) => (
       <View key={index} style={styles.row}>
-        <Text style={styles.label}>Status:</Text>
-        <Text style={[styles.value, item.status === 'ongoing' ? styles.ongoingText : styles.endedText]}>
-        {item.status}
-        </Text>
         <Text style={styles.label}>Created on:</Text>
         <Text style={styles.value}>{formatDate(item.createdon)}</Text>
         <Text style={styles.label}>Created by:</Text>
         <Text style={styles.value}>{item.createdby}</Text>
+        <Text style={styles.label}>Login Status:</Text>
+        <Text style={[styles.value, item.loginstatus.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
+          {item.loginstatus}
+        </Text>
+        <Text style={styles.label}>Logout Status:</Text>
+        <Text style={[styles.value, item.logoutstatus.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
+          {item.logoutstatus}
+        </Text>
+        {item.status.toLowerCase() === 'ended' && (
+          <>
+            <Text style={styles.label}>Event Status:</Text>
+            <Text style={[styles.value, item.status.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
+              {item.status}
+            </Text>
+            <Text style={styles.label}>Ended on:</Text>
+            <Text style={styles.endedText}>{formatDate(item.endedby)}</Text>
+          </>
+        )}
       </View>
     ));
   };
@@ -78,18 +93,18 @@ const OptionSelector = () => {
   
   const fetchOptions = () => {
     return new Promise(async (resolve, reject) => {
-      setLoading(true);
+      setShowLoading(true);
       
       try {
         const check = [api || apiUrl];
         const response = await axios.get(`${check}/attappthree/getOptions.php`);
         const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
         setOptions(response.data);
-        setLoading(false); 
-        resolve(optionsArray); // make the promise come true
+        setShowLoading(false); 
+        resolve(optionsArray); // make this promise come true
         ToastAndroid.show('done!', ToastAndroid.SHORT)
       } catch (error) {
-        setLoading(false);
+        setShowLoading(false);
         const errorMessage = `error fetching options: network error`;
         console.error(errorMessage);
         ToastAndroid.showWithGravityAndOffset(
@@ -104,9 +119,6 @@ const OptionSelector = () => {
     });
     // mannnnnnnn, promise2 atay alas 11:44 sa gabii wa koy gibuthat kundi mag program ani
   };
-  
-
-  
 
   const handleOptionChange = async (itemValue) => {
 
@@ -141,7 +153,6 @@ const OptionSelector = () => {
     }
   };
   
-
   return (
     <View style={styles.container}>
       <Text>Select an option:</Text>
@@ -150,7 +161,8 @@ const OptionSelector = () => {
         onValueChange={handleOptionChange}
         style={styles.picker}
       >
-        <Picker.Item label="Select an option" value={null} />
+        
+        <Picker.Item label="Select an Event Option..." value={null} />
         {options.map((option, index) => (
           <Picker.Item
             key={index}
@@ -159,17 +171,54 @@ const OptionSelector = () => {
           />
         ))}
       </Picker>
+      <Picker
+        selectedValue={selectedLog}
+        onValueChange={(itemValue) => setselectedLog(itemValue)}
+        style={styles.picker}
+      >
+        <Picker.Item label="Select either Login or Logout" value={null} />
+        <Picker.Item label="Log Login" value="login" />
+        <Picker.Item label="Log Logout" value="logout" />
+      </Picker>
       <View style={styles.scontainer}>
         <TouchableOpacity
           style={styles.sbutton}
           title="Mount"
           onPress={() => {
-            if (selectedOption) {
-              // go to scanner
-              navigation.navigate('BarcodeScanner', { selectedTable: selectedOption });
+            if (tableData.length > 0) {
+              const selectedEvent = tableData[0]; 
+              console.log("option", selectedOption);
+              
+              if (selectedEvent) {
+                let isEnded = false;
+                
+                if (selectedLog === 'login') {
+                  isEnded = selectedEvent.loginstatus.toLowerCase() === 'ended';
+                } else if (selectedLog === 'logout') {
+                  if (selectedEvent.loginstatus.toLowerCase() === 'ended') {
+                  isEnded = selectedEvent.logoutstatus.toLowerCase() === 'ended';
+                  } else {
+                    Alert.alert("Error", `Login in ${selectedOption} is still ongoing`);
+                  return;
+                  }
+                } else {
+                  Alert.alert("Error", "Please select a Log Operation.");
+                  return;
+                }
+              
+                if (isEnded) {
+                  Alert.alert(`Cannot mount an ended ${selectedLog} event.`);
+                } else {
+                  
+                  navigation.navigate('BarcodeScanner', { selectedTable: selectedOption, selectedLogging: selectedLog });
+                }
+              } else {
+                
+                Alert.alert('Please select a valid table before mounting.');
+              }
             } else {
-              // error handling
-              Alert.alert('Please select a table before mounting.');
+              
+              Alert.alert('Please select a valid table before mounting.');
             }
           }}
         >
@@ -207,16 +256,18 @@ const OptionSelector = () => {
           <Text>{formatData(tableData)}</Text>
       )}
 
-      {/* loading animal */}
-      {isLoading && (
-        <View style={styles.overlay}>
-        <View style={styles.loadingContainer}>
-          <View style={styles.top}>
-            <LoaderView isActive={isLoading} />
-          </View>
-        </View>
-        </View>
-      )}
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF" // Customize the progress bar color
+      />
       
     </View>
   );
@@ -265,7 +316,7 @@ const styles = StyleSheet.create({
     },
   },
   picker: {
-    width: 300, // Adjust as needed
+    width: 300, 
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -291,7 +342,7 @@ const styles = StyleSheet.create({
     color: '#61DAFB',
   },
   endedText: {
-    color: 'red', // or any color for ended status
+    color: 'red', 
   },
   loadingContainer: {
     marginTop: 250,
@@ -315,6 +366,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.1)', 
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  alertContainer: {
+    borderRadius: 10,
+    backgroundColor: 'white',
+    padding: 20,
+    width: '50%',
+    alignItems: 'center',
+  },
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF', 
+    marginBottom: 10,
   },
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import LoaderView from './LoaderView';
 import { useRoute } from '@react-navigation/native';
@@ -10,7 +10,6 @@ import Modal from 'react-native-modal';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function App() {
   const { apiUrl } = useApiUrl();
@@ -22,6 +21,7 @@ export default function App() {
   const [isAlertVisible, setAlertVisible] = useState(false); //alert flag
   const route = useRoute();
   const selectedTable = route.params.selectedTable;
+  const selectedLogging = route.params.selectedLogging;
   const navigation = useNavigation();
   const [api, setApiUrl] = useState('');
   const [flashMode, setFlashMode] = useState(false);
@@ -51,7 +51,7 @@ export default function App() {
       setHasPermission(status === 'granted');
 
       navigation.setOptions({
-        title: `mounted: ${selectedTable}`,
+        title: `mounted: ${selectedTable} : ${selectedLogging}`,
       });
     })();
   }, []);
@@ -78,6 +78,7 @@ export default function App() {
           params: {
             scannedData: data,
             selectedTable: selectedTable,
+            selectedLog: selectedLogging,
           },
         });
   
@@ -86,6 +87,7 @@ export default function App() {
         setLoading(false); // Hide loading animation
   
         const responseData = response.data;
+        console.log(responseData);
 
         if (responseData && responseData.success) {
           ToastAndroid.showWithGravityAndOffset(
@@ -199,7 +201,7 @@ export default function App() {
 
   const renderCamera = () => {
     return (
-      <KeyboardAvoidingView style={styles.cameraContainer}>
+      <View style={styles.cameraContainer}>
         <Camera
           style={styles.camera}
           type={Camera.Constants.Type.back}
@@ -208,7 +210,7 @@ export default function App() {
           flashMode={flashMode ? Camera.Constants.FlashMode.torch : Camera.Constants.FlashMode.off}
         />
         
-      </KeyboardAvoidingView>
+      </View>
     );
   };
   
@@ -230,12 +232,6 @@ export default function App() {
   
 
   return (
-    <KeyboardAwareScrollView
-    style={{ flex: 1, backgroundColor: 'black' }} // Set background color to your preference
-    resetScrollToCoords={{ x: 0, y: 0 }}
-    contentContainerStyle={{ flex: 1 }}
-    scrollEnabled={false}
-    >
     <View style={styles.container}>
       <View style={styles.cameraContainer}>
         {renderCamera()}
@@ -327,7 +323,6 @@ export default function App() {
           </View>
       </Modal>
       </View>
-      </View>
   
       {/* Loading Modal */}
       {isLoading && (
@@ -338,7 +333,7 @@ export default function App() {
         </View>
       )}
     </View>
-    </KeyboardAwareScrollView>
+    </View>
   );
   
 }

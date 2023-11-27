@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ToastAndroid, TouchableHighlight } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert, ToastAndroid, TouchableHighlight } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CheckBox, Card } from 'react-native-elements';
 import * as SecureStore from 'expo-secure-store';
@@ -14,6 +14,8 @@ const SettingsScreen = () => {
         const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
         if (storedApiUrl) {
           setApiUrl(storedApiUrl);
+          // Set the protocol checkbox based on the existing API URL
+          setUseHttps(storedApiUrl.startsWith('https://'));
         }
       } catch (error) {
         console.error('Error fetching API URL:', error);
@@ -27,17 +29,19 @@ const SettingsScreen = () => {
 
   const handleSave = async () => {
     try {
+      console.log('useHttps:', useHttps);
+
       if (!apiUrl) {
         Alert.alert('API URL cannot be empty', 'null', [{ text: 'Ok', style: 'default' }]);
         return;
       }
 
       const protocol = useHttps ? 'https://' : 'http://';
-      const fullapiUrl = `${protocol}${apiUrl}`;
+      const fullapiUrl = /^(https?|ftp):\/\//i.test(apiUrl) ? apiUrl : `${protocol}${apiUrl}`;
 
       Alert.alert(
         'Confirm Save',
-        `Save API URL: ${apiUrl}?`,
+        `Save API URL: ${fullapiUrl}?`,
         [
           {
             text: 'Cancel',
@@ -48,18 +52,9 @@ const SettingsScreen = () => {
             onPress: async () => {
               try {
                 await SecureStore.setItemAsync('apiUrl', fullapiUrl);
-
-                // Check if the user is logged in
-                const isLoggedIn = await SecureStore.getItemAsync('isLoggedIn');
-
-                if (isLoggedIn === 'true') {
-                  // User is logged in, navigate to MainPage
-                  navigation.navigate('MainPage', { updatedApiUrl: fullapiUrl });
-                } else {
-                  // User is not logged in, navigate to AccountScreen
-                  navigation.navigate('AccountsScreen');
-                }
-
+        
+                handleResetStack();
+                
                 ToastAndroid.showWithGravityAndOffset(
                   `API URL saved: ${fullapiUrl}`,
                   ToastAndroid.LONG,
@@ -110,34 +105,13 @@ const SettingsScreen = () => {
         </View>
 
         <TouchableHighlight
-          style={{
-            backgroundColor: '#3498db',
-            padding: 15,
-            borderRadius: 5,
-            marginTop: 20,
-            width: '100%',
-            alignItems: 'center',
-          }}
+          style={styles.saveButton}
           underlayColor="#2980b9"
           onPress={handleSave}
         >
           <Text style={{ color: 'white', fontSize: 16 }}>Save</Text>
         </TouchableHighlight>
 
-        <TouchableHighlight
-          style={{
-            backgroundColor: '#3498db',
-            padding: 15,
-            borderRadius: 5,
-            marginTop: 20,
-            width: '100%',
-            alignItems: 'center',
-          }}
-          underlayColor="#2980b9"
-          onPress={handleResetStack}
-        >
-          <Text style={{ color: 'white', fontSize: 16 }}>Reset</Text>
-        </TouchableHighlight>
       </Card>
     </View>
   );
@@ -194,7 +168,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 5,
     marginTop: 20, // Added margin to the top
-  },
+    width: '100%',
+    alignItems: 'center',
+  }
 });
 
 export default SettingsScreen;

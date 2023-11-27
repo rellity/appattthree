@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
 import * as SecureStore from 'expo-secure-store'
@@ -60,6 +60,7 @@ const StudentLookupScreen = () => {
               id: idNumber,
             },
           });
+          console.log("sc",secondResponse.data);
   
           if (secondResponse.data) {
             setEventData(secondResponse.data);
@@ -109,33 +110,57 @@ const StudentLookupScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleLookup}>
         <Text style={styles.buttonText}>Lookup Student</Text>
       </TouchableOpacity>
+      
+        <View style={styles.scrollableCard}>
+            <ScrollView style={{ flexGrow: 1 }}>
+              
+            {!studentData && !eventData && !fineData && (
+              <View style={styles.invalidIdContainer}>
+                <Text>Enter a valid ID number</Text>
+              </View>
+            )}
 
-      {studentData && ( 
-        <View style={styles.studentInfoContainer}>
-          <Text>Name  : {studentData.name}</Text>
-          <Text>ID No.: {studentData.stuid}</Text>
-          <View style={styles.divider} />
-        </View>
-      )}
+              {studentData && (
+                <View style={styles.studentInfoContainer}>
+                  <Text>Name  : {studentData.name}</Text>
+                  <Text>ID No.: {studentData.stuid}</Text>
+                  <View style={styles.divider} />
+                </View>
+              )}
 
-      {eventData && (
-        <View style={styles.eventDataContainer}>
-          {Object.keys(eventData).map((eventKey) => (
-            <Text key={eventKey}>
-              {eventKey}: {eventData[eventKey] ? 'present' : 'absent'}
-            </Text>
-          ))}
-          <View style={styles.divider} />
-        </View>
+              {eventData && (
+                <View style={styles.eventDataContainer}>
+                  {
+                    Object.keys(eventData).map((eventKey) => {
+                      const eventDataValue = eventData[eventKey];
+                      return (
+                        <View key={eventKey} style={{ alignItems: 'center' }}>
+                          <Text style={styles.eventKey}>{eventKey} : </Text>
+                          {
+                            Object.keys(eventDataValue).map((key) => (
+                              <Text key={`${eventKey}-${key}`}>
+                                {key}: {eventDataValue[key] ? 'present' : 'absent'}
+                              </Text>
+                            ))
+                          }
+                          <View style={styles.divider} />
+                        </View>
+                      );
+                    })
+                  }
+                </View>
+              )}
 
-      )}
-
-      {fineData && ( 
-        <View style={styles.studentInfoContainer}>
-          <Text>Total Fines  :  ₱{fineData.total_fine}</Text>
-          <View style={styles.divider} />
-        </View>
-      )}
+              {fineData && (
+                <View style={styles.studentInfoContainer}>
+                  <Text>Total Fines  :  ₱{fineData.total_fine}</Text>
+                  <View style={styles.divider} />
+                </View>
+              )}
+            </ScrollView>
+          </View>
+      
+          
 
 
 
@@ -146,7 +171,7 @@ const StudentLookupScreen = () => {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      flexDirection: 'collumn',
+      flexDirection: 'column',
       alignItems: 'center',
       backgroundColor: '#FFFFFF',
     },
@@ -171,13 +196,37 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
     },
+    scrollableCard: {
+      padding: 20,
+      borderRadius: 10,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+      maxHeight: 600,
+      width: 300,
+    },
     studentInfoContainer: {
-      marginTop: 20,
+      alignItems: 'center',
+      padding: 10,
+      backgroundColor: '#f5f5f5',
+    },
+    eventDataContainer: {
+      padding: 10,
+      backgroundColor: '#f5f5f5',
+    },
+    eventKey: {
+      fontWeight: 'bold',
+      padding: 5,
     },
     divider: {
-    borderBottomColor: 'black', // Adjust color as needed
-    borderBottomWidth: 1,
-    marginVertical: 10, // Add space above and below the line
+      height: 1,
+      backgroundColor: '#ccc',
+      margin: 10,
     },
   });
   

@@ -5,6 +5,7 @@ import { Checkbox, Card } from 'react-native-paper';
 import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 const AccountsScreen = ({navigation}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,7 +16,29 @@ const AccountsScreen = ({navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
   const { apiUrl } = useApiUrl();
   const [userRole, setUserRole] = useState('');
+  const [api, setApiUrl] = useState('')
+  const [funame, setFname] = useState('')
+  const [showLoading, setShowLoading] = useState(false);
   let content;
+
+  useEffect(() => {
+    const fetchApiUrl = async () => {
+      try {
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchApiUrl();
+    console.log({api});
+  }, []);
+
+  const check = [ api || apiUrl ];
+  console.log(check);
 
   const onBackPress = () => {
     if (isLoggedIn) {
@@ -45,20 +68,21 @@ const AccountsScreen = ({navigation}) => {
   switch (userRole) {
     case 'superadm':
       content = (
-        <Card style={styles.card}>
+        <View style={styles.loginContainer1}>
           <Card.Title title="Super Administrator" />
           <Card.Content>
-            <Text>You are a superadm</Text>
+            <Text>You are a superadm, {funame}</Text>
           </Card.Content>
           <Card.Actions>
-            <TouchableOpacity onPress={() => navigation.navigate('SuperadmScreen1')}>
-              <Text>Screen 1</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('DataSyncScreen')}>
+              <Text>DB Operations</Text>
             </TouchableOpacity>
+            <Text> | </Text>
             <TouchableOpacity onPress={() => navigation.navigate('SuperadmScreen2')}>
               <Text>Screen 2</Text>
             </TouchableOpacity>
           </Card.Actions>
-        </Card>
+        </View>
       );
       break;
 
@@ -67,8 +91,8 @@ const AccountsScreen = ({navigation}) => {
         <View style={styles.loginContainer1}>
           <Card.Title title="Officer" />
           <Card.Content>
-            <Text>You are an officer</Text>
-            <Text>Job Description: Summarized description of officer's job</Text>
+            <Text>You are an officer, {funame}</Text>
+            <Text>Job Description: description of officer's job</Text>
           </Card.Content>
         </View>
       );
@@ -101,6 +125,10 @@ const AccountsScreen = ({navigation}) => {
           setUserRole(storedAccprev);
         });
 
+        SecureStore.getItemAsync('fname').then((storedfname) => {
+          setFname(storedfname);
+        });
+
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
       }
     })
@@ -118,91 +146,131 @@ const AccountsScreen = ({navigation}) => {
   }, []);
 
   const handleLogin = async () => {
+    setShowLoading(true);
     try {
-      const compurl = `${apiUrl}/attappthree/admlogin.php`;
+      
+  
+      const compurl = `${check}/attappthree/admlogin.php`;
+  
+      const loginPromise = new Promise(async (resolve, reject) => {
+        try {
+          const response = await axios.get(compurl, {
+            params: { username, password },
+          });
+  
+          if (!compurl) {
+            reject(new Error('Network error.'));
+            return;
+          }
+  
+          const data = response.data;
+  
+          if (data.success) {
+            // store login state, account name, password, and accprev idk for later use???
+            setIsLoggedIn(true);
+            setAccountName(username);
+            console.log(response.data);
+  
+            if (rememberPassword) {
+              SecureStore.setItemAsync('password', password);
+            }
+            SecureStore.setItemAsync('isLoggedIn', 'true');
+            SecureStore.setItemAsync('accountName', username);
+            SecureStore.setItemAsync('accprev', data.user.accprev);
+            SecureStore.setItemAsync('fname', data.user.fname);
+            // set user role duiplay
+            const storedAccprev = await SecureStore.getItemAsync('accprev');
+            const userRole = storedAccprev || data.user.accprev;
+            setUserRole(userRole);
 
-      const response = await axios.get(compurl, {
-        params: { username, password },
-      });
+            storedfname = await SecureStore.getItemAsync('fname');
+            const fname = storedfname ||data.user.fname;
+            setFname(fname);
 
-      if (!compurl) {
-        Alert.alert('Error', 'network error.');
-        return;
-      }
-
-      const data = response.data;
-
-      if (data.success) {
-        // store login state, account name, password, and accprev idk for later use???
-        setIsLoggedIn(true);
-        setAccountName(username);
-        console.log(response.data);
-
-        if (rememberPassword) {
-            SecureStore.setItemAsync('password', password);
+            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  
+            resolve(data);
+          } else {
+            reject(new Error(`Login failed: ${data.message}`));
+          }
+        } catch (error) {
+          reject(error);
+        } finally {
+          setShowLoading(false);
         }
-        SecureStore.setItemAsync('isLoggedIn', 'true');
-        SecureStore.setItemAsync('accountName', username);
-        SecureStore.setItemAsync('accprev', data.user.accprev);
-        // set user role duiplay
-        const storedAccprev = await SecureStore.getItemAsync('accprev');
-        const userRole = storedAccprev || data.user.accprev;
-        setUserRole(userRole);
-
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      } else {
-        Alert.alert('Login failed:', data.message);
-      }
-    } catch (error) {
-      console.error('Error during login:', error);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      const accountName = await SecureStore.getItemAsync('accountName');
-
-      const compurl = `${apiUrl}/attappthree/admlogout.php`;
-
-      const logoutResponse = await axios.get(compurl, {
-        params: { username: accountName },
       });
   
+      await loginPromise;
+    } catch (error) {
+      console.error('Error during login:', error);
+      Alert.alert('Login failed:', error.message);
+    }
+  };  
+
+  const handleLogout = async () => {
+    setShowLoading(true);
+    try {
       
-      const logoutData = logoutResponse.data;
-      if (logoutData.success) {
-        console.log(logoutData.message); 
-      } else {
-        console.error('Logout failed:', logoutData.message);
-      }
+  
+      const accountName = await SecureStore.getItemAsync('accountName');
+  
+      const compurl = `${check}/attappthree/admlogout.php`;
+  
+      const logoutPromise = new Promise(async (resolve, reject) => {
+        try {
+          const logoutResponse = await axios.get(compurl, {
+            params: { username: accountName },
+          });
+  
+          const logoutData = logoutResponse.data;
+  
+          if (logoutData.success) {
+            console.log(logoutData.message);
+            resolve(logoutData);
+          } else {
+            reject(new Error(`Logout failed: ${logoutData.message}`));
+          }
+        } catch (error) {
+          reject(error);
+        } finally {
+          setShowLoading(false);
+        }
+      });
+  
+      await logoutPromise;
     } catch (error) {
       console.error('Error during logout:', error);
-
-      // Display an error toast message
+  
+      // Display an error toast message for network errors
       ToastAndroid.showWithGravityAndOffset(
-        'network error:  log out not recorded',
+        'Network error: Logout restricted',
         ToastAndroid.LONG,
         ToastAndroid.BOTTOM,
         25,
         50
       );
+  
+      return;
+    } finally {
+      setIsLoggedIn(false);
+      setAccountName('');
+      setUsername('');
+  
+      // Wipe stored login state, account name, password, and accprev
+      await SecureStore.deleteItemAsync('isLoggedIn');
+      await SecureStore.deleteItemAsync('accountName');
+      await SecureStore.deleteItemAsync('accprev');
+      setUserRole('');
     }
-  
-    setIsLoggedIn(false);
-    setAccountName('');
-    setUsername('');
-  
-    // wipe stored login state, account name, password, and accprev
-    await SecureStore.deleteItemAsync('isLoggedIn');
-    await SecureStore.deleteItemAsync('accountName');
-    await SecureStore.deleteItemAsync('accprev');
-    setUserRole('');
+    console.log(showLoading)
   };
+  
 
   return (
     <View style={styles.container}>
+      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>API URL: { check }</Text>
       {isLoggedIn ? (
-          <View style={styles.loggedInContainer}>
+        <View style={styles.loggedInContainer}>
           <Text style={styles.welcomeText}>Welcome, {accountName}!</Text>
           <TouchableOpacity style={styles.loginButton2} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
@@ -215,7 +283,10 @@ const AccountsScreen = ({navigation}) => {
             </View>
           )}
         </View>
+        
         ) : (
+        
+          
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>Log In</Text>
 
@@ -267,6 +338,20 @@ const AccountsScreen = ({navigation}) => {
           navigation.navigate('SettingsScreen');}}>
             <Text style={styles.buttonText}>Api Settings</Text>
       </TouchableOpacity>
+
+      {/* Awesome Alert for loading state */}
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF" // Customize the progress bar color
+      />
     </View>
   );
 };

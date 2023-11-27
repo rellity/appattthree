@@ -1,30 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
+import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 
 const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
   const [eventName, setEventName] = useState('');
+  const [eventPrice, setEventPrice] = useState('');
+  const [api, setApiUrl] = useState("");
+  const [fname, setfname] = useState("");
+  const check = api || apiUrl;
+  const navigation = useNavigation();
+  console.log("logs", check);
+
+  useEffect(() => {
+    const fetchApiUrl = async () => {
+      try {
+        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+        if (storedApiUrl) {
+          setApiUrl(storedApiUrl);
+        }
+
+        const storedfname = await SecureStore.getItemAsync('fname');
+        if (storedfname) {
+          setfname(storedfname);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchApiUrl();
+    console.log({api});
+  }, []);
 
   const createEvent = async () => {
     try {
-      if (eventName.trim() === '') {
-        Alert.alert('Please enter an event name.');
-        return;
+      const compurl = `${check}/attappthree/create_event.php`;
+      const response = await axios.post(compurl, {
+        name: eventName,
+        createdby: fname,
+        price: eventPrice },{
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+    );
+    
+      // Handle the response here
+      console.log(response.data);
+      if (response.data) {
+        Alert.alert(
+        'Success',
+        'Event Added',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              handleSave();
+            },
+          },
+        ],);
+      } else {
+        Alert.alert('Error','Event not Added');
       }
 
-      const response = await axios.post(apiUrl, { event_name: eventName });
       
-      if (response.data.error) {
-        Alert.alert('Error creating event:', response.data.error);
-      } else {
-        Alert.alert('Event created successfully!');
-      }
     } catch (error) {
-      Alert.alert('Error creating event:', error.message);
+      // Handle errors here
+      console.error('Error creating event:', error.message);
     }
+  };
+
+  const handleSave = () => {
+    navigation.reset({
+      index: 0,
+      routes: [
+        { name: 'MainPage' },
+        { name: 'OptionSelector' },
+      ],
+    });
   };
 
   return (
@@ -35,6 +92,12 @@ const EventCreationScreen = () => {
         value={eventName}
         onChangeText={(text) => setEventName(text)}
         placeholder="Event Name"
+      />
+      <TextInput
+        style={styles.input}
+        value={eventPrice}
+        onChangeText={(text) => setEventPrice(text)}
+        placeholder="Fine Price (per entry)"
       />
       <TouchableOpacity style={styles.button} onPress={createEvent}>
         <Text style={styles.buttonText}>Create Event</Text>
