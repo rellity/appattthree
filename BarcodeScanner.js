@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Adjust alpha to control darkness
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
   },
   button: {
     backgroundColor: 'blue',

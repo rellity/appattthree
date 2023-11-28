@@ -68,20 +68,20 @@ const AccountsScreen = ({navigation}) => {
   switch (userRole) {
     case 'superadm':
       content = (
-        <View style={styles.loginContainer1}>
+        <View style={styles.loginContainer2}>
           <Card.Title title="Super Administrator" />
           <Card.Content>
-            <Text>You are a superadm, {funame}</Text>
+              <Text>You are a superadm, {funame}</Text>
+            <Card.Actions>
+              <TouchableOpacity onPress={() => navigation.navigate('DataSyncScreen')}>
+                <Text>DB Operations</Text>
+              </TouchableOpacity>
+              <Text> | </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('SuperadmScreen2')}>
+                <Text>Accounts</Text>
+              </TouchableOpacity>
+            </Card.Actions>
           </Card.Content>
-          <Card.Actions>
-            <TouchableOpacity onPress={() => navigation.navigate('DataSyncScreen')}>
-              <Text>DB Operations</Text>
-            </TouchableOpacity>
-            <Text> | </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SuperadmScreen2')}>
-              <Text>Screen 2</Text>
-            </TouchableOpacity>
-          </Card.Actions>
         </View>
       );
       break;
@@ -191,7 +191,7 @@ const AccountsScreen = ({navigation}) => {
   
             resolve(data);
           } else {
-            reject(new Error(`Login failed: ${data.message}`));
+            reject(new Error(`Login failed: connection timed out`));
           }
         } catch (error) {
           reject(error);
@@ -209,36 +209,43 @@ const AccountsScreen = ({navigation}) => {
 
   const handleLogout = async () => {
     setShowLoading(true);
+  
     try {
-      
-  
       const accountName = await SecureStore.getItemAsync('accountName');
-  
       const compurl = `${check}/attappthree/admlogout.php`;
   
-      const logoutPromise = new Promise(async (resolve, reject) => {
-        try {
-          const logoutResponse = await axios.get(compurl, {
-            params: { username: accountName },
-          });
+      // Check if compurl exists
+      if (!compurl) {
+        Alert.alert("Logout Failed", "No Internet Connection");
+        setShowLoading(false);
+        return;
+      }
   
-          const logoutData = logoutResponse.data;
-  
-          if (logoutData.success) {
-            console.log(logoutData.message);
-            resolve(logoutData);
-          } else {
-            reject(new Error(`Logout failed: ${logoutData.message}`));
-          }
-        } catch (error) {
-          reject(error);
-        } finally {
-          setShowLoading(false);
-        }
+      const logoutResponse = await axios.get(compurl, {
+        params: { username: accountName },
       });
   
-      await logoutPromise;
+      const logoutData = logoutResponse.data;
+  
+      if (logoutData.success) {
+        console.log(logoutData.message);
+  
+        setIsLoggedIn(false);
+        setAccountName('');
+        setUsername('');
+  
+        // Wipe stored login state, account name, password, and accprev
+        await SecureStore.deleteItemAsync('isLoggedIn');
+        await SecureStore.deleteItemAsync('accountName');
+        await SecureStore.deleteItemAsync('accprev');
+        setUserRole('');
+      } else {
+        throw new Error(`Logout failed: ${logoutData.message}`);
+      }
+  
+      setShowLoading(false);
     } catch (error) {
+      setShowLoading(false);
       console.error('Error during logout:', error);
   
       // Display an error toast message for network errors
@@ -249,20 +256,9 @@ const AccountsScreen = ({navigation}) => {
         25,
         50
       );
-  
-      return;
-    } finally {
-      setIsLoggedIn(false);
-      setAccountName('');
-      setUsername('');
-  
-      // Wipe stored login state, account name, password, and accprev
-      await SecureStore.deleteItemAsync('isLoggedIn');
-      await SecureStore.deleteItemAsync('accountName');
-      await SecureStore.deleteItemAsync('accprev');
-      setUserRole('');
     }
-    console.log(showLoading)
+  
+    console.log(showLoading);
   };
   
 
@@ -350,7 +346,7 @@ const AccountsScreen = ({navigation}) => {
         showConfirmButton={false}
         contentContainerStyle={styles.alertContainer}
         titleStyle={styles.alertTitle}
-        progressColor="#007AFF" // Customize the progress bar color
+        progressColor="#007AFF" 
       />
     </View>
   );
@@ -451,6 +447,18 @@ const styles = StyleSheet.create({
   loginContainer1: {
     backgroundColor: '#ffffff',
     padding: 20,
+    width: '100%',
+    borderRadius: 10,
+    elevation: 5,
+    borderBottomLeftRadius: 0, 
+    borderBottomRightRadius: 0, 
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+  },
+  loginContainer2: {
+    backgroundColor: '#ffffff',
+    padding: 20,
+    width: '100%',
     borderRadius: 10,
     elevation: 5,
     borderBottomLeftRadius: 0, 
