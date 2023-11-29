@@ -12,6 +12,7 @@ import EventCreationScreen from './EventCreationScreen';
 import StudentLookupScreen from './StudentLookupScreen';
 import DataSyncScreen from './DataSyncScreen';
 import AccountsScreen from './AccountsScreen';
+import AdminManagementScreen from './AdminManagementScreen';
 
 
 const Stack = createStackNavigator();
@@ -37,6 +38,7 @@ function App() {
           <Stack.Screen name="EventCreationScreen" component={EventCreationScreen} options={{ title: ' ' }} />
           <Stack.Screen name="StudentLookupScreen" component={StudentLookupScreen} options={{ title: ' ' }} />
           <Stack.Screen name="DataSyncScreen" component={DataSyncScreen} options={{ title: ' ' }} />
+          <Stack.Screen name="AdminManagementScreen" component={AdminManagementScreen} options={{ title: ' ' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApiUrlProvider>

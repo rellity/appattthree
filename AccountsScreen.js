@@ -1,6 +1,7 @@
 import React, { useState, useEffect, } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert, BackHandler, ToastAndroid } from 'react-native';
+import { View, Text, Modal, TextInput, Button, StyleSheet, TouchableOpacity, Alert, BackHandler, ToastAndroid } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import { Picker } from '@react-native-picker/picker';
 import { Checkbox, Card } from 'react-native-paper';
 import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
@@ -19,6 +20,10 @@ const AccountsScreen = ({navigation}) => {
   const [api, setApiUrl] = useState('')
   const [funame, setFname] = useState('')
   const [showLoading, setShowLoading] = useState(false);
+  const [options, setOptions] = useState([]);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [data, setData] = useState([]);
+  const [isAlertVisible, setAlertVisible] = useState(false);
   let content;
 
   useEffect(() => {
@@ -38,7 +43,33 @@ const AccountsScreen = ({navigation}) => {
   }, []);
 
   const check = [ api || apiUrl ];
+
+  useEffect(() => {
+    // Fetch options from PHP API
+    const fetchOptions = async () => {
+      try {
+        const response = await axios.get(`${check}/attappthree/getclasses.php`);
+        setOptions(response.data);
+      } catch (error) {
+        console.error('Error fetching options:', error);
+        // Handle error (e.g., show an error message)
+      }
+    };
+
+    fetchOptions();
+  }, []);
+
+  
   console.log(check);
+
+  const handleOpenAlert = () => {
+    console.log('Opening alert');
+    setAlertVisible(true);
+  };
+
+  const handleCloseAlert = () => {
+    setAlertVisible(false);
+  };
 
   const onBackPress = () => {
     if (isLoggedIn) {
@@ -74,11 +105,15 @@ const AccountsScreen = ({navigation}) => {
               <Text>You are a superadm, {funame}</Text>
             <Card.Actions>
               <TouchableOpacity onPress={() => navigation.navigate('DataSyncScreen')}>
-                <Text>DB Operations</Text>
+                <Text style={styles.underline}>DB Operations</Text>
               </TouchableOpacity>
               <Text> | </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('SuperadmScreen2')}>
-                <Text>Accounts</Text>
+              <TouchableOpacity onPress={handleOpenAlert}>
+                <Text style={styles.underline}>Class List</Text>
+              </TouchableOpacity>
+              <Text> | </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('AdminManagementScreen')}>
+                <Text style={styles.underline}>Accounts</Text>
               </TouchableOpacity>
             </Card.Actions>
           </Card.Content>
@@ -92,7 +127,12 @@ const AccountsScreen = ({navigation}) => {
           <Card.Title title="Officer" />
           <Card.Content>
             <Text>You are an officer, {funame}</Text>
-            <Text>Job Description: description of officer's job</Text>
+            <Text>You are tasked with as the record keeper.</Text>
+            <Card.Actions>
+              <TouchableOpacity onPress={handleOpenAlert}>
+                <Text style={styles.underline}>Class List</Text>
+              </TouchableOpacity>
+            </Card.Actions>
           </Card.Content>
         </View>
       );
@@ -260,7 +300,23 @@ const AccountsScreen = ({navigation}) => {
   
     console.log(showLoading);
   };
-  
+
+  const handlePickerChange = async (value) => {
+    setShowLoading(true);
+    setSelectedOption(value);
+
+    // Fetch data based on the selected option
+    if (value) {
+      try {
+        const response = await axios.get(`${check}/attappthree/getclasslist.php?value=${value}`);
+        setData(response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Handle error (e.g., show an error message)
+      }
+    }
+    setShowLoading(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -273,7 +329,7 @@ const AccountsScreen = ({navigation}) => {
           </TouchableOpacity>
       
           {userRole && (
-            <View>
+            <View style={styles.loginContainer3}>
               {/* switch-case napod arun dli kapoy tan awon puro if-else */}
               {content}
             </View>
@@ -335,6 +391,50 @@ const AccountsScreen = ({navigation}) => {
             <Text style={styles.buttonText}>Api Settings</Text>
       </TouchableOpacity>
 
+      <Modal visible={isAlertVisible} transparent animationType="slide">
+        <View style={styles.modal}>
+          <View style={styles.modalContent}>
+            {/* Picker for selecting an option */}
+            <Picker
+              selectedValue={selectedOption}
+              onValueChange={handlePickerChange}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select an Option..." value={null} />
+              {options.map((option, index) => (
+                <Picker.Item key={index} label={option} value={option} />
+              ))}
+            </Picker>
+
+            {/* Close button in the alert */}
+            
+
+            {/* Display fetched data */}
+            {data.length > 0 && (
+              <View style={styles.table}>
+                <View style={styles.row}>
+                  <Text style={styles.header}>Name</Text>
+                  <Text style={styles.header}>Student ID</Text>
+                  <Text style={styles.header}>Year Section</Text>
+                </View>
+            
+              {data.map((item, index) => (
+                <View style={styles.row} key={index}>
+                  <Text style={styles.cell}>{item.name}</Text>
+                  <Text style={styles.cell}>{item.stuid}</Text>
+                  <Text style={styles.cell}>{item.yearsec}</Text>
+                </View>
+              ))}
+              </View>
+            )}
+          </View>
+          <TouchableOpacity onPress={handleCloseAlert} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+        </TouchableOpacity>
+        </View>
+        
+      </Modal>
+
       {/* Awesome Alert for loading state */}
       <AwesomeAlert
         show={showLoading}
@@ -373,6 +473,10 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderBottomLeftRadius: 0, 
     borderBottomRightRadius: 0, 
+  },
+  loginContainer3: {
+    backgroundColor: '#ffffff',
+    padding: 20, 
   },
   loginText: {
     fontSize: 24,
@@ -447,7 +551,7 @@ const styles = StyleSheet.create({
   loginContainer1: {
     backgroundColor: '#ffffff',
     padding: 20,
-    width: '100%',
+    MaxWidth: '100%',
     borderRadius: 10,
     elevation: 5,
     borderBottomLeftRadius: 0, 
@@ -458,7 +562,7 @@ const styles = StyleSheet.create({
   loginContainer2: {
     backgroundColor: '#ffffff',
     padding: 20,
-    width: '100%',
+    MaxWidth: '100%',
     borderRadius: 10,
     elevation: 5,
     borderBottomLeftRadius: 0, 
@@ -466,6 +570,62 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
   },
+  modal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    width: '80%', // Adjust the width as needed
+  },
+  picker: {
+    width: '100%', // Make the picker take full width
+  },
+  closeButton: {
+    width: '80%',
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: 'blue', // Adjust the color as needed
+    borderRadius: 4,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  table: {
+    marginTop: 20,
+    width: '100%',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  header: {
+    fontWeight: 'bold',
+    flex: 2,
+    width: 100,
+    textAlign: 'center',
+    borderWidth: 1,
+    padding: 5,
+  },
+  cell: {
+    flex: 2,
+    width: 100,
+    textAlign: 'center',
+    borderWidth: 1,
+    padding: 5,
+  },
+  underline: {textDecorationLine: 'underline'},
+  
 });
 
 export default AccountsScreen;

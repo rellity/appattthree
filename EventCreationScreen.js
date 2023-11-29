@@ -4,6 +4,7 @@ import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
+import { Card } from 'react-native-paper';
 
 const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
@@ -33,8 +34,18 @@ const EventCreationScreen = () => {
     };
 
     fetchApiUrl();
-    console.log({api});
+    console.log({ api });
   }, []);
+
+  const handleOnChange = (newText) => {
+    const sanitizedText = newText.replace(/[\s~`!@#\$%\^&\*\(\)\-+=\[\]\{\}\|\\\'\/\?\:"<>,\.]/g, '');
+    setEventName(sanitizedText);
+  };
+
+  function sanitizeText(text) {
+    const sanitizedText = text.replace(/[^0-9]+/g, ''); 
+    return sanitizedText;
+  }
 
   const createEvent = async () => {
     try {
@@ -42,32 +53,31 @@ const EventCreationScreen = () => {
       const response = await axios.post(compurl, {
         name: eventName,
         createdby: fname,
-        price: eventPrice },{
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-    );
-    
+        price: eventPrice
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
       // Handle the response here
       console.log(response.data);
       if (response.data) {
         Alert.alert(
-        'Success',
-        'Event Added',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              handleSave();
+          'Success',
+          'Event Added',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                handleSave();
+              },
             },
-          },
-        ],);
+          ],
+        );
       } else {
-        Alert.alert('Error','Event not Added');
+        Alert.alert('Error', 'Event not Added');
       }
-
-      
     } catch (error) {
       // Handle errors here
       console.error('Error creating event:', error.message);
@@ -86,75 +96,75 @@ const EventCreationScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Enter Event Name:</Text>
-      <TextInput
-        style={styles.input}
-        value={eventName}
-        onChangeText={(text) => setEventName(text)}
-        placeholder="Event Name"
-      />
-      <TextInput
-        style={styles.input}
-        value={eventPrice}
-        onChangeText={(text) => setEventPrice(text)}
-        placeholder="Fine Price (per entry)"
-      />
-      <TouchableOpacity style={styles.button} onPress={createEvent}>
-        <Text style={styles.buttonText}>Create Event</Text>
-      </TouchableOpacity>
+      <Card style={styles.card}>
+        <Card.Content>
+          <Card.Title title="Event Creation" style={styles.plainText} />
+          <TextInput
+            style={styles.input}
+            value={eventName}
+            onChangeText={handleOnChange}
+            placeholder="Event Name"
+          />
+          <TextInput
+            style={styles.input}
+            value={eventPrice}
+            onChangeText={(text) => setEventPrice(sanitizeText(text))}
+            placeholder="Fine Price (per entry)"
+          />
+          <TouchableOpacity style={styles.button} onPress={createEvent}>
+            <Text style={styles.buttonText}>Create Event</Text>
+          </TouchableOpacity>
+        </Card.Content>
+      </Card>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: "100%",
+    width: "100%",
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
   },
+  card: {
+    width: '80%',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    borderRadius: 10,
+    elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   input: {
-    width: 300,
     height: 40,
+    width: 230,
     borderColor: 'gray',
     borderWidth: 1,
-    marginBottom: 20,
-    padding: 10,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    borderRadius: 5,
   },
   buttonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  plainText: {
+    color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
   },
   button: {
-    width: 200,
+    width: '60%',
     height: 50,
     backgroundColor: '#007bff',
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: '50%',
   },
 });
 
-
-// import * as React from 'react';
-// import { WebView } from 'react-native-webview';
-// import { StyleSheet } from 'react-native';
-// import Constants from 'expo-constants';
-
-// const EventCreationScreen= () => {
-//   return (
-//     <WebView
-//       style={styles.container}
-//       source={{ uri: 'http://192.168.1.101/attappthree/bar.php' }}
-//     />
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     marginTop: Constants.statusBarHeight,
-//   },
-// });
 export default EventCreationScreen;
