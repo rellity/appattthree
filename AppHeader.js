@@ -3,8 +3,10 @@ import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import IoniconsHeaderButton from './IoniconsHeaderButton';
 import { View, Text, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { ToastAndroid } from 'react-native';
 
 const DropdownMenu = ({ menuItems, onSelect, isOpen, onClose }) => {
+
   if (!isOpen) {
     return null;
   }
@@ -79,7 +81,10 @@ const AppHeader = () => {
     if (item === 'account') {
       navigation.navigate('AccountsScreen');
     } else if (item === 'about') {
-      navigation.navigate('AboutScreen');
+      ToastAndroid.show("there is no about us, kay way kami 😂😂😂",ToastAndroid.LONG)
+      ToastAndroid.show('wa bitaw', ToastAndroid.LONG)
+      ToastAndroid.show('nadaot man gud', ToastAndroid.LONG)
+      ToastAndroid.show('mao nang way about us😂😂😂', ToastAndroid.LONG)
     }
   };
 

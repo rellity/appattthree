@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 const AdminItem = ({ item, onEdit, onDelete }) => (
   <View style={styles.tableHeader}>
@@ -30,6 +31,7 @@ const AdminManagementScreen = () => {
   const [fname, setFname] = useState('');
   const { apiUrl } = useApiUrl();
   const [api, setApiUrl] = useState('');
+  const [showLoading, setLoading] = useState(false); //loading animation flag
 
   useEffect(() => {
     const fetchApiUrl = async () => {
@@ -54,17 +56,16 @@ const AdminManagementScreen = () => {
   }, []);
 
   const fetchAdmins = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`${check}/attappthree/admfetch.php`);
-      // Extract the admins array from the response data
       const adminsArray = response.data.admins;
 
-      // Set the admins state with the extracted array
       setAdmins(adminsArray);
     } catch (error) {
       console.error('Error fetching admins:', error);
-      // Handle error
     }
+    setLoading(false);
   };
 
   const handleOpenModal = (admin) => {
@@ -74,6 +75,11 @@ const AdminManagementScreen = () => {
     setName(admin.uname);
     setPassword(admin.pass);
     setFname(admin.fname);
+  };
+
+  const handleOpenModalAdd = () => {
+    setModalVisible(true);
+    clearInputs();
   };
 
   const handleCloseModal = () => {
@@ -161,9 +167,15 @@ const AdminManagementScreen = () => {
     />
   );
 
+  const clearInputs = () => {
+    setName('');
+    setPassword('');
+    setFname('');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Admin Management Screen</Text>
+      <Text style={styles.headerText}>Officer Accounts Management Screen</Text>
 
       <FlatList
         ListHeaderComponent={renderHeader}
@@ -172,7 +184,7 @@ const AdminManagementScreen = () => {
         renderItem={renderItem}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={() => handleOpenModal(null)}>
+      <TouchableOpacity style={styles.addButton} onPress={handleOpenModalAdd}>
         <Text style={styles.buttonText}>Add Admin</Text>
       </TouchableOpacity>
 
@@ -198,11 +210,36 @@ const AdminManagementScreen = () => {
               value={fname}
               onChangeText={(text) => setFname(text)}
             />
-            <Button title="Save" onPress={handleSaveAdmin} />
-            <Button title="Cancel" onPress={handleCloseModal} />
           </View>
+          <View style={{ width: '80%', flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TouchableOpacity 
+            title="Save"
+            onPress={handleSaveAdmin}
+            style={styles.btnT1}>
+            
+            <Text style={styles.btnT1Text}>Save</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            title="Cancel"
+            onPress={handleCloseModal}
+            style={styles.btnT1}>
+               <Text style={styles.btnT1Text}>Close</Text>
+          </TouchableOpacity>
+        </View>
         </View>
       </Modal>
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF" 
+      />
     </View>
   );
 };
@@ -212,7 +249,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ecf0f1',
+    backgroundColor: 'white',
   },
   headerText: {
     fontSize: 20,
@@ -220,6 +257,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   addButton: {
+    width: "80%",
     backgroundColor: 'blue',
     padding: 15,
     borderRadius: 4,
@@ -258,7 +296,8 @@ const styles = StyleSheet.create({
     width: 100,
     textAlign: 'center',
     borderWidth: 1,
-    padding: 10,
+    padding: 2,
+    marginBottom: 5,
   },
   
   editButton: {
@@ -288,7 +327,19 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-  }
+  },
+  btnT1: {
+    width: '48%',
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: 'blue', // Adjust the color as needed
+    borderRadius: 4,
+  },
+  btnT1Text: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
 });
 
 export default AdminManagementScreen;

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import LoaderView from './LoaderView';
 import { useRoute } from '@react-navigation/native';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
@@ -10,6 +9,7 @@ import Modal from 'react-native-modal';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 export default function App() {
   const { apiUrl } = useApiUrl();
@@ -17,7 +17,7 @@ export default function App() {
   const [scanned, setScanned] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
-  const [isLoading, setLoading] = useState(false); //loading animation flag
+  const [showLoading, setLoading] = useState(false); //loading animation flag
   const [isAlertVisible, setAlertVisible] = useState(false); //alert flag
   const route = useRoute();
   const selectedTable = route.params.selectedTable;
@@ -59,7 +59,7 @@ export default function App() {
   
 
   const handleData = async (data) => {
-    if (isLoading) {[[[]]]
+    if (showLoading) {[[[]]]
       return;
     }
     setLoading(true);
@@ -213,9 +213,6 @@ export default function App() {
       </View>
     );
   };
-  
-
-  
 
   if (hasPermission === null) {
     return <View />;
@@ -325,13 +322,18 @@ export default function App() {
       </View>
   
       {/* Loading Modal */}
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          <View style={styles.top}>
-            <LoaderView isActive={isLoading} />
-          </View>
-        </View>
-      )}
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF" 
+      />
     </View>
     </View>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert,Platform } from 'react-native';
+import { View,Image,Text,TextInput,StyleSheet,TouchableOpacity,Alert, } from 'react-native';
 import axios from 'axios';
+import { Card, Title } from 'react-native-paper';
 import { Dialog } from '@rneui/themed';
 import { useApiUrl } from './ApiUrlContext';
 import AwesomeAlert from 'react-native-awesome-alerts';
@@ -64,9 +65,9 @@ function BarcodeGenerator() {
         },
       });
   
-      console.log(registerResponse.data); // debug dance
+      console.log(registerResponse.data); 
   
-      return registerResponse.data; // Return the response data for further handling
+      return registerResponse.data; 
     } catch (error) {
       console.log(error);
       return { success: false, message: 'An unexpected error occurred during registration.' };
@@ -133,14 +134,14 @@ function BarcodeGenerator() {
   
       setShowLoading(true);
   
-      // Trigger student registration
+      
       const registrationResult = await registerStudent();
   
       if (registrationResult.success) {
-        // Registration successful, proceed with barcode generation
+        
         await generateBarcodeImage();
       } else {
-        // Registration failed, show an alert
+        
         Alert.alert('Student Registration Failed', registrationResult.message);
       }
     } catch (error) {
@@ -170,6 +171,13 @@ function BarcodeGenerator() {
 
   const closeBarcodeDialog = () => {
     setBarcodeDialogVisible(false);
+    clearInputs();
+  };
+
+  const clearInputs = () => {
+    setInputValue('');
+    setys('');
+    setname('');
   };
 
   const handleShare = async () => {
@@ -223,29 +231,41 @@ function BarcodeGenerator() {
   
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register and Generate Student Barcode</Text>
-      <TextInput
-        placeholder="Enter Student ID number (xxxxxxx-x)"
-        value={inputValue}
-        onChangeText={handleInputChange}
-        maxLength={9}
-        style={styles.input} />
-      <TextInput
-        placeholder="Enter Fullname"
-        value={fullname}
-        onChangeText={handlenamechange}
-        maxLength={50}
-        style={styles.input} />
-      <TextInput
-        placeholder="Enter Year and Section (ex:4A..eg)"
-        value={yearsec}
-        onChangeText={handleyschange}
-        maxLength={2}
-        style={styles.input} />
+      <Image
+        source={require('./assets/CCSIT.png')} 
+        style={styles.logo}
+        resizeMode="contain" 
+      />
+      <Title style={styles.title}>Register and Generate Student Barcode</Title>
+      <Card style={styles.card}>
+        <Card.Content>
+          <TextInput
+            placeholder="Enter Student ID number (xxxxxxx-x)"
+            value={inputValue}
+            onChangeText={handleInputChange}
+            maxLength={9}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Enter Fullname"
+            value={fullname}
+            onChangeText={handlenamechange}
+            maxLength={50}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Enter Year and Section (ex:4A..eg)"
+            value={yearsec}
+            onChangeText={handleyschange}
+            maxLength={2}
+            style={styles.input}
+          />
+        </Card.Content>
+        
+      </Card>
       <TouchableOpacity
         style={styles.generateButton}
-        onPress={generateBarcode}
-      >
+        onPress={generateBarcode}>
         <Text style={styles.buttonText}>Generate Barcode</Text>
       </TouchableOpacity>
 
@@ -303,13 +323,27 @@ function BarcodeGenerator() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
+  card: {
+    width: '80%',
+    alignSelf: 'center',
+    borderRadius: 10,
+    elevation: 3,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 18,
     marginBottom: 20,
+    fontWeight: 'bold',
+  },
+  logo: {
+    top: -30,
+    width: 160,
+    height: 160, 
+    marginBottom: 30,
   },
   input: {
     width: '100%',
@@ -322,9 +356,10 @@ const styles = StyleSheet.create({
   },
   generateButton: {
     backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    marginTop: 20,
+    padding: 15,
     borderRadius: 5,
+    width: '80%',
   },
   buttonText: {
     color: 'white',
@@ -358,11 +393,6 @@ const styles = StyleSheet.create({
   barcodeContainer: {
     alignItems: 'center',
     padding: 20,
-  },
-
-  barcodeImage: {
-    width: 200,
-    height: 100,
   },
 
   loadingContainer: {

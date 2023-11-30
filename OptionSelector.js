@@ -6,6 +6,8 @@ import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import * as SecureStore from 'expo-secure-store'
+import PurgeOptionsScreen from './PurgeOptionsScreen';
+import { Title } from 'react-native-paper';
 
 const OptionSelector = () => {
   const { apiUrl } = useApiUrl();
@@ -16,11 +18,14 @@ const OptionSelector = () => {
   const [showLoading, setShowLoading] = useState(false);
   const [api, setApiUrl] = useState(null);
   const [selectedLog, setselectedLog] = useState(null);
+  const [purgeOptionsModalVisible, setPurgeOptionsModalVisible] = useState(false);
+  const [selectedMode, setSelectedMode] = useState(null);
+  const [flag, setFlag] = useState(null);
 
   useEffect(() => {
+    setShowLoading(false);
     const fetchData = async () => {
       try {
-        ToastAndroid.show('Fetching API URL...', ToastAndroid.SHORT);
         const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
         if (storedApiUrl) {
           setApiUrl(storedApiUrl);
@@ -45,6 +50,7 @@ const OptionSelector = () => {
     if (api) {
       console.log('api:', api);
       fetchOptions();
+      
     }
   }, [apiUrl]); 
   
@@ -54,7 +60,7 @@ const OptionSelector = () => {
     return data.map((item, index) => (
       <View key={index} style={styles.row}>
         <Text style={styles.label}>Created on:</Text>
-        <Text style={styles.value}>{formatDate(item.createdon)}</Text>
+        <Text style={styles.value}>{formatDateToGMT8(item.createdon)}</Text>
         <Text style={styles.label}>Created by:</Text>
         <Text style={styles.value}>{item.createdby}</Text>
         <Text style={styles.label}>Login Status:</Text>
@@ -72,14 +78,14 @@ const OptionSelector = () => {
               {item.status}
             </Text>
             <Text style={styles.label}>Ended on:</Text>
-            <Text style={styles.endedText}>{formatDate(item.endedby)}</Text>
+            <Text style={styles.endedText}>{formatDateToGMT8(item.endedby)}</Text>
           </>
         )}
       </View>
     ));
   };
 
-  const formatDate = (dateString) => {
+  const formatDateToGMT8 = (dateString) => {
     const options = {
       year: 'numeric',
       month: 'long',
@@ -87,8 +93,13 @@ const OptionSelector = () => {
       hour: 'numeric',
       minute: 'numeric',
       hour12: true,
+      timeZone: 'Asia/Singapore', // GMT+8
     };
-    return new Date(dateString).toLocaleString('en-US', options);
+  
+    const gmt8Date = new Date(dateString);
+    gmt8Date.setHours(gmt8Date.getHours() + 8); // Add 8 hours for GMT+8
+  
+    return gmt8Date.toLocaleString('en-US', options);
   };
   
   const fetchOptions = () => {
@@ -145,6 +156,7 @@ const OptionSelector = () => {
   
         // log , tanggalon ni basta 
         console.log('Response data:', response.data);
+        setFlag(response.data.status);
       } else {
         setTableData([]); // clear table data????u  
       }
@@ -152,10 +164,149 @@ const OptionSelector = () => {
       Alert.alert('Error fetching data for the selected table:', error);
     }
   };
+
+  const handlePurgeOptions = async (selectedMode) => {
+    console.log("0;",selectedMode);
+    try {
+      const { clearEvent, clearLoginData, clearLogoutData, deleteEventEntry, endLogin, endLogout } = selectedMode;
+      console.log("Selected Mode:", selectedMode);
+
+      if (selectedMode === 'clearEvent') {
+        respond = await axios.get(`${check}/attappthree/truncatetable.php`, { params: { table: selectedOption } });
+        Alert.alert(
+          "Cleared",
+          "Table Data Cleared",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                handleSave();
+              },
+            },
+          ]
+        );
+        console.log(respond.data);
+        console.log("1;",selectedOption);
+        ToastAndroid.show('Table Data Destroyed into utter nothingness, in the darkness of the night, we the people of the shadows', ToastAndroid.LONG);
+      }
+
+      if (selectedMode === 'clearLoginData') {
+        respond = await axios.get(`${check}/attappthree/truncateevent.php`, { params: { table: selectedOption, column: 'login' } });
+        Alert.alert(
+          "Cleared",
+          "Login Data Cleared",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                handleSave();
+              },
+            },
+          ]
+        );
+        console.log("clearlogin response: ", respond.data);
+        console.log("1;",selectedOption);
+        ToastAndroid.show('Login Data Cleared, +1 clarity', ToastAndroid.SHORT);
+      }
+
+      if (selectedMode === 'clearLogoutData') {
+        respond = await axios.get(`${check}/attappthree/truncateevent.php`, { params: { table: selectedOption, column: 'logout' } });
+        Alert.alert(
+          "Cleared",
+          "Logout Data Cleared",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                handleSave();
+              },
+            },
+          ]
+        );
+        console.log("clearlogin response: ", respond.data);
+        console.log("1;",selectedOption);
+        ToastAndroid.show('Logout Data Cleared, +1 darkness', ToastAndroid.SHORT);
+      }
+
+      if (selectedMode === 'deleteEventEntry') {
+        respond = await axios.get(`${check}/attappthree/deleteevent.php`, { params: { table: selectedOption } });
+        Alert.alert(
+          "Deleted",
+          "Event Entry Deleted",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                handleSave();
+              },
+            },
+          ]
+        );
+        console.log("clearlogin response: ", respond.data);
+        console.log("1;",selectedOption);
+        ToastAndroid.show(`Event Entry Deleted: ${selectedOption}, life is short delete an event.`, ToastAndroid.SHORT);
+      }
+
+      if (selectedMode === 'endLogin') {
+        respond = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: selectedOption, column: 'login' } });
+        Alert.alert(
+          "Ended",
+          "Login Status Ended",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                handleSave();
+              },
+            },
+          ]
+        );
+        console.log("clearlogin response: ", respond.data);
+        console.log("1;",selectedOption);
+        ToastAndroid.show(`Login Ended: ${selectedOption}, we are soooo back!!!`, ToastAndroid.SHORT);
+      }
+
+      if (selectedMode === 'endLogout') {
+        respond = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: selectedOption, column: 'logout' } });
+        Alert.alert(
+          "Ended",
+          "Logout Status Ended",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                handleSave();
+              },
+            },
+          ]
+        );
+        console.log("clearlogin response: ", respond.data);
+        console.log("1;",selectedOption);
+        ToastAndroid.show(`Logout Ended: ${selectedOption}, we are done, i dont care, quit ur bs`, ToastAndroid.SHORT);
+      }
+
+      // Close the modal after completing the purge actions
+      setPurgeOptionsModalVisible(false);
+    } catch (error) {
+      console.error('Error purging options:', error);
+      // Handle error
+      Alert.alert('Error', 'Failed to purge options');
+    }
+  };
   
+  const handleSave = () => {
+    navigation.reset({
+      index: 0,
+      routes: [
+        { name: 'MainPage' },
+        { name: 'OptionSelector' },
+      ],
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Text>Select an option:</Text>
+      <Title style={styles.title}>View Events</Title>
       <Picker
         selectedValue={selectedOption}
         onValueChange={handleOptionChange}
@@ -220,6 +371,7 @@ const OptionSelector = () => {
               
               Alert.alert('Please select a valid table before mounting.');
             }
+            setselectedLog(selectedLog);
           }}
         >
           <Text style={styles.buttonText}>Mount Event</Text>
@@ -229,12 +381,11 @@ const OptionSelector = () => {
           style={styles.sbutton}
           title="Modify"
           onPress={() => {
-            if (selectedOption) {
-              // go to scanner
-              navigation.navigate('BarcodeScanner', { selectedTable: selectedOption });
+            if (selectedOption && flag === 'ongoing') {
+              setPurgeOptionsModalVisible(true), { selectedMode };
             } else {
               // error handling
-              Alert.alert('Please select a table to modify.');
+              Alert.alert('Invalid Option', 'Please pick a valid/non-ended Event.');
             }
           }}
         >
@@ -269,6 +420,11 @@ const OptionSelector = () => {
         progressColor="#007AFF" // Customize the progress bar color
       />
       
+      <PurgeOptionsScreen
+        visible={purgeOptionsModalVisible}
+        onClose={() => setPurgeOptionsModalVisible(false)}
+        onPurge={handlePurgeOptions}
+      />
     </View>
   );
   
@@ -299,6 +455,11 @@ const styles = StyleSheet.create({
       width: 0,
       height: 4,
     },
+  },
+  title: {
+    fontSize: 18,
+    marginBottom: 20,
+    fontWeight: 'bold',
   },
   sbutton: {
     width: 140,

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
-import { Card } from 'react-native-paper';
+import { Card, Title } from 'react-native-paper';
 
 const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
@@ -96,9 +96,15 @@ const EventCreationScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require('./assets/CCSIT.png')} 
+        style={styles.logo}
+        resizeMode="contain" 
+      />
+      <Title title="Event Creation" style={styles.title}>Create New Event</Title>
       <Card style={styles.card}>
+      
         <Card.Content>
-          <Card.Title title="Event Creation" style={styles.plainText} />
           <TextInput
             style={styles.input}
             value={eventName}
@@ -111,59 +117,59 @@ const EventCreationScreen = () => {
             onChangeText={(text) => setEventPrice(sanitizeText(text))}
             placeholder="Fine Price (per entry)"
           />
-          <TouchableOpacity style={styles.button} onPress={createEvent}>
-            <Text style={styles.buttonText}>Create Event</Text>
-          </TouchableOpacity>
+          
         </Card.Content>
       </Card>
+      <TouchableOpacity style={styles.button} onPress={createEvent}>
+        <Text style={styles.buttonText}>Create Event</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: "100%",
-    width: "100%",
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    padding: 20,
   },
   card: {
     width: '80%',
-    backgroundColor: '#ffffff',
-    padding: 20,
+    alignSelf: 'center',
     borderRadius: 10,
-    elevation: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    elevation: 3,
   },
   input: {
+    width: '100%',
     height: 40,
-    width: 230,
     borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 10,
+    borderRadius: 20,
     paddingHorizontal: 10,
-    borderRadius: 5,
   },
   buttonText: {
-    color: '#fff',
+    color: 'white',
     fontSize: 16,
-    fontWeight: 'bold',
   },
-  plainText: {
+  title: {
     color: 'black',
     fontSize: 18,
+    marginBottom: 20,
     fontWeight: 'bold',
   },
   button: {
-    width: '60%',
-    height: 50,
-    backgroundColor: '#007bff',
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: '50%',
+    backgroundColor: '#007AFF',
+    marginTop: 20,
+    padding: 15,
+    borderRadius: 5,
+    width: '80%',
+  },
+  logo: {
+    width: 200,
+    height: 200, 
+    marginBottom: 30,
   },
 });
 

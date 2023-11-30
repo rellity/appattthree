@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView 
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
 import * as SecureStore from 'expo-secure-store'
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 const StudentLookupScreen = () => {
   const [idNumber, setIdNumber] = useState('');
@@ -11,6 +12,7 @@ const StudentLookupScreen = () => {
   const [fineData, setFineData] = useState(null);
   const { apiUrl } = useApiUrl();
   const [api, setApiUrl] = useState('')
+  const [showLoading, setShowLoading] = useState(false);
   
   useEffect(() => {
     const fetchApiUrl = async () => {
@@ -32,6 +34,7 @@ const StudentLookupScreen = () => {
 
 
   const handleLookup = async () => {
+    setShowLoading(true);
     if (idNumber.trim() === '') {
       Alert.alert('Please enter an ID number.');
       return;
@@ -95,6 +98,7 @@ const StudentLookupScreen = () => {
     } catch (error) {
       Alert.alert('Error:', error.message);
     }
+    setShowLoading(false);
   };
 
 
@@ -110,7 +114,7 @@ const StudentLookupScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleLookup}>
         <Text style={styles.buttonText}>Lookup Student</Text>
       </TouchableOpacity>
-      
+      {studentData || eventData || fineData ? (
         <View style={styles.scrollableCard}>
             <ScrollView style={{ flexGrow: 1 }}>
               
@@ -159,11 +163,20 @@ const StudentLookupScreen = () => {
               )}
             </ScrollView>
           </View>
-      
-          
+          ) : null}
 
-
-
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF" 
+      />
     </View>
   );
 };

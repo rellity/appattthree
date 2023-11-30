@@ -8,11 +8,9 @@ const MainPage = ({ route,navigation }) => {
   const updatedApiUrl = route.params ? route.params.updatedApiUrl : null;
 
   useEffect(() => {
-    // Check if the user is logged in
     SecureStore.getItemAsync('isLoggedIn')
       .then((storedIsLoggedIn) => {
         if (storedIsLoggedIn !== 'true') {
-          // If not logged in, navigate to the login screen
           navigation.navigate('AccountsScreen');
         }
       })
@@ -22,14 +20,15 @@ const MainPage = ({ route,navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Logo */}
       <Image
-        source={require('./assets/CCSIT.png')} // logo
+        source={require('./assets/CCSIT.png')} 
         style={styles.logo}
-        resizeMode="contain" // Preserve aspect ratio
+        resizeMode="contain" 
       />
       
-      <Text>API URL: { updatedApiUrl || apiUrl }</Text>
+      <Text style={styles.watermark}>
+        API URL: {updatedApiUrl || apiUrl}
+      </Text>
 
       {/* Buttons */}
       <TouchableOpacity
@@ -72,11 +71,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF', // Background color for the container
+    backgroundColor: '#FFFFFF', 
   },
   logo: {
     width: 200,
-    height: 200, // Adjust the height according to your logo's aspect ratio
+    height: 200, 
     marginBottom: 30,
   },
   button: {
@@ -100,6 +99,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  watermark: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    padding: 10,
+    textAlign: 'center',
+    fontSize: 12,
   },
 });
 
