@@ -7,13 +7,12 @@ import OptionSelector from './OptionSelector';
 import { ApiUrlProvider } from './ApiUrlContext';
 import SettingsScreen from './SettingsScreen';
 import BarCodeScanner from './BarcodeScanner';
-import AppHeader from './AppHeader'; // Import the custom header component
+import AppHeader from './AppHeader'; 
 import EventCreationScreen from './EventCreationScreen';
 import StudentLookupScreen from './StudentLookupScreen';
 import DataSyncScreen from './DataSyncScreen';
 import AccountsScreen from './AccountsScreen';
 import AdminManagementScreen from './AdminManagementScreen';
-import AboutUs from './aboutus';
 
 
 const Stack = createStackNavigator();
@@ -40,7 +39,6 @@ function App() {
           <Stack.Screen name="StudentLookupScreen" component={StudentLookupScreen} options={{ title: ' ' }} />
           <Stack.Screen name="DataSyncScreen" component={DataSyncScreen} options={{ title: ' ' }} />
           <Stack.Screen name="AdminManagementScreen" component={AdminManagementScreen} options={{ title: ' ' }} />
-          <Stack.Screen name="AboutUs" component={AboutUs} options={{ title: ' ' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ApiUrlProvider>
