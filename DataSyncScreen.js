@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Alert, Share } from 'react-native';
+import { ScrollView, TouchableOpacity, Alert, Share } from 'react-native';
 import { Button, Card, Title, Paragraph } from 'react-native-paper';
 import * as DocumentPicker from 'expo-document-picker';
 import axios from 'axios';
@@ -201,8 +201,38 @@ const DataSyncScreen = () => {
     }
   };
 
+  const handleDropdata = async () => {
+    Alert.alert(
+        'Confirm Export',
+        'This will open the browser and download the file.', 
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Confirm',
+            onPress: async () => {
+              try {
+                const response = await axios.get(`${check}/attappthree/dropall.php`);
+                console.log(response.data)
+                if (response.data) {
+                  Alert.alert('Event Data Wiped',`Data Wiped Successfuly!`);
+                } else {
+                  Alert.alert('Error', 'Something Went Wrong, Please Try Again.');
+                }
+              } catch (error) {
+                console.error('Error fetching logs:', error);
+                Alert.alert('Error', 'Failed to fetch logs.');
+              }
+            }
+          }
+        ]
+      );
+  };
+
   return (
-    <View style={{ flex: 1, padding: 16 }}>
+    <ScrollView style={{ flex: 1, padding: 16 }}>
       <Card>
         <Card.Content>
           <Title>Import Data</Title>
@@ -225,7 +255,7 @@ const DataSyncScreen = () => {
         </Card.Content>
 
         <Card.Actions>
-          <Button onPress={handleImport}>Import SQL File</Button>
+          <Button onPress={handleImport}>Import SQL File </Button>
         </Card.Actions>
       </Card>
 
@@ -237,7 +267,18 @@ const DataSyncScreen = () => {
         </Card.Content>
 
         <Card.Actions>
-          <Button onPress={handleExport}>Export SQL File</Button>
+          <Button onPress={handleExport}> Export SQL File</Button>
+        </Card.Actions>
+      </Card>
+      {/* Export SQL File */}
+      <Card style={{ marginTop: 16 }}>
+        <Card.Content>
+          <Title>Delete All Events</Title>
+          <Paragraph>Wipe Event Data, reasons may include: new school year, server migration</Paragraph>
+        </Card.Content>
+
+        <Card.Actions>
+          <Button onPress={handleDropdata}>     Wipe Data      </Button>
         </Card.Actions>
       </Card>
 
@@ -251,14 +292,20 @@ const DataSyncScreen = () => {
             style={{ backgroundColor: '#f5f5f5', marginVertical: 8 }}
           >
             <Picker.Item label="Select an Event Option..." value={null} />
-            {options.map((option, index) => (
-              <Picker.Item key={index} label={option} value={option} />
+            {options && Array.isArray(options) && options.length > 0 && options.map((option, index) => (
+                option !== '' && (
+                  <Picker.Item
+                    key={index}
+                    label={option}
+                    value={option}
+                  />
+                )
             ))}
           </Picker>
         </Card.Content>
 
         <Card.Actions>
-          <Button onPress={handleCSVExport}>Export CSV File</Button>
+          <Button onPress={handleCSVExport}> Export CSV File </Button>
         </Card.Actions>
       </Card>
 
@@ -270,11 +317,11 @@ const DataSyncScreen = () => {
         </Card.Content>
 
         <Card.Actions>
-          <Button onPress={handleViewLogs}>View Logs</Button>
+          <Button onPress={handleViewLogs}>      View Logs     </Button>
         </Card.Actions>
       </Card>
       {/* View Logs Card */}
-    </View>
+    </ScrollView>
   );
 };
 

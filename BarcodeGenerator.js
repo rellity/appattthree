@@ -9,6 +9,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import * as SecureStore from 'expo-secure-store'
+import { ToastAndroid } from 'react-native';
 
 function BarcodeGenerator() {
   const [barcodeData, setBarcodeData] = useState(null);
@@ -141,8 +142,37 @@ function BarcodeGenerator() {
         
         await generateBarcodeImage();
       } else {
-        
-        Alert.alert('Student Registration Failed', registrationResult.message);
+        Alert.alert(
+          'Student Registration Failed',
+          registrationResult.message,
+          [
+            {
+              text: 'OK',
+              onPress: async () => {
+                const reg = await axios.get(`${check}/attappthree/checkstustat.php`, {
+                  params: {
+                    name: fullname,
+                    value: inputValue,
+                    yearsec: yearsec,
+                  },
+                });
+                
+                if (reg.data.success){
+                  await generateBarcodeImage();
+                } else {
+                  ToastAndroid.showWithGravityAndOffset(
+                    'Error: Student Data Mismatch',
+                    ToastAndroid.LONG,
+                    ToastAndroid.BOTTOM,
+                    25,
+                    50
+                  );
+                }
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       }
     } catch (error) {
       console.error(error);
@@ -158,12 +188,27 @@ function BarcodeGenerator() {
       setInputValue(text);
     }
   };
+
   const handlenamechange = (text) => {
-    setname(text);
+    const formattedText = text
+      .replace(/\s{2,}/g, ' ')
+      .replace(/[^A-Za-z.\s]/g, '')
+      .replace(/(?:^|\s)\S/g, (a) => a.toUpperCase());
+    setname(formattedText);
   };
+
   const handleyschange = (text) => {
-    setys(text);
+    const sanitizedText = text.replace(/[^1-4a-hA-H]/g, '') // Remove characters that are not 1-4 or A-H
+                              .replace(/([a-h])/, (match, group1) => group1.toUpperCase()); // Capitalize lowercase letters
+  
+    // Ensure the first character is a number between 1-4 and the second character is a letter between A-H (optional)
+    if (/^([1-4](?:[A-H])?)?$/.test(sanitizedText)) {
+      setys(sanitizedText);
+    }
   };
+  
+  
+  
 
   const openBarcodeDialog = () => {
     setBarcodeDialogVisible(true);
@@ -247,7 +292,7 @@ function BarcodeGenerator() {
             style={styles.input}
           />
           <TextInput
-            placeholder="Enter Fullname"
+            placeholder="Enter Fullname (Firstname Lastname)"
             value={fullname}
             onChangeText={handlenamechange}
             maxLength={50}
@@ -299,6 +344,7 @@ function BarcodeGenerator() {
           </View>
         )}
         <Dialog.Actions>
+          <Dialog.Button title="Share Barcode" onPress={handleShare} />
           <Dialog.Button title="Close" onPress={closeBarcodeDialog} />
         </Dialog.Actions>
       </Dialog>

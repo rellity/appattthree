@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, Button, StyleSheet, } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 const PurgeOptionsScreen = ({ visible, onClose, onPurge }) => {
@@ -49,13 +49,18 @@ const PurgeOptionsScreen = ({ visible, onClose, onPurge }) => {
           </Picker>
 
           <Text>{getDescription()}</Text>
-
-          <View style={styles.buttonContainer}>
-            <Button style={styles.vtn} title="GO" onPress={handlePurge} />
-            <Button style={styles.vtn} title="Cancel" onPress={onClose} />
-          </View>
+        </View>
+        <View style={{ width: '80%', flexDirection: 'row', justifyContent: 'space-between' }}>
+        <TouchableOpacity onPress={handlePurge} style={styles.vtn}>
+                <Text style={styles.vtnText}>Save</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onClose} style={styles.vtn}>
+              <Text style={styles.vtnText}>Close</Text>
+        </TouchableOpacity>
         </View>
       </View>
+      
+        
     </Modal>
   );
 };
@@ -87,9 +92,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   vtn: {
-    color: 'white',
+    width: '48%',
+    marginTop: 10,
     padding: 10,
-    margin: 5,
+    backgroundColor: 'blue', // Adjust the color as needed
+    borderRadius: 4,
+  },
+  vtnText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   }
 });
 

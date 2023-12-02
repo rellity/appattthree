@@ -209,7 +209,6 @@ export default function App() {
           ref={(ref) => { this.camera = ref }}
           flashMode={flashMode ? Camera.Constants.FlashMode.torch : Camera.Constants.FlashMode.off}
         />
-        
       </View>
     );
   };
@@ -241,13 +240,13 @@ export default function App() {
             name="flashlight"
             size={50}
             color={flashMode ? "#ffff00" : "#fff"} 
-            style={{ marginBottom: 100, marginRight: 50 }}
+            style={{ marginBottom: 50, marginRight: 50 }}
           />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {
             setShowManualInput(true);
           }}>
-            <MaterialIcons name="input" size={50} color="white" style={{ marginBottom: 100, marginLeft: 50 }}/>
+            <MaterialIcons name="input" size={50} color="white" style={{ marginBottom: 50, marginLeft: 50 }}/>
           </TouchableOpacity>
           
           <Modal
@@ -342,9 +341,11 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
   title: {
     fontSize: 24,
@@ -356,9 +357,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   cameraContainer: {
-    flex: 1,
+    height: '100%',
     width: '100%',
     justifyContent: 'center',
+    position: 'absolute',
   },
   camera: {
     width: '100%',
@@ -381,6 +383,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.8)',
     backgroundColor: 'rgba(255,255,255,0.1)',
+    position: 'absolute'
   },
   darkOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -410,9 +413,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 100, // Adjust this value to position it below the highlight container
+    bottom: 100,
     width: '100%',
     alignItems: 'center',
+    position: 'absolute',
   },
   manualInput: {
     width: 300,

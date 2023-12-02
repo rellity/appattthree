@@ -1,5 +1,5 @@
 import React, { useState, useEffect, } from 'react';
-import { View, Text, Modal, TextInput, Button, StyleSheet, TouchableOpacity, Alert, BackHandler, ToastAndroid } from 'react-native';
+import { Image, View, Text, Modal, TextInput, FlatList, StyleSheet, TouchableOpacity, Alert, BackHandler, ToastAndroid } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { Picker } from '@react-native-picker/picker';
 import { Checkbox, Card } from 'react-native-paper';
@@ -102,20 +102,26 @@ const AccountsScreen = ({navigation}) => {
         <View style={styles.loginContainer2}>
           <Card.Title title="Super Administrator" />
           <Card.Content>
-              <Text>You are a superadm, {funame}</Text>
-            <Card.Actions>
-              <TouchableOpacity onPress={() => navigation.navigate('DataSyncScreen')}>
-                <Text style={styles.underline}>DB Operations</Text>
-              </TouchableOpacity>
-              <Text> | </Text>
-              <TouchableOpacity onPress={handleOpenAlert}>
-                <Text style={styles.underline}>Class List</Text>
-              </TouchableOpacity>
-              <Text> | </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('AdminManagementScreen')}>
-                <Text style={styles.underline}>Accounts</Text>
-              </TouchableOpacity>
-            </Card.Actions>
+              <Text>You are a superadmin,{'\n'}{funame}</Text>
+
+              <Text> • You have the same previleges as an offier</Text>
+              <Text> • You have an extended access to the data directly</Text>
+              <Text> • You can manage officer accounts</Text>
+              <Card.Actions>
+                <View style={styles.centeredActions}>
+                  <TouchableOpacity onPress={() => navigation.navigate('DataSyncScreen')}>
+                    <Text style={styles.underline}>DB Operations</Text>
+                  </TouchableOpacity>
+                  <Text> | </Text>
+                  <TouchableOpacity onPress={handleOpenAlert}>
+                    <Text style={styles.underline}>Class List</Text>
+                  </TouchableOpacity>
+                  <Text> | </Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('AdminManagementScreen')}>
+                    <Text style={styles.underline}>Accounts</Text>
+                  </TouchableOpacity>
+                </View>
+              </Card.Actions>
           </Card.Content>
         </View>
       );
@@ -127,7 +133,7 @@ const AccountsScreen = ({navigation}) => {
           <Card.Title title="Officer" />
           <Card.Content>
             <Text>You are an officer, {funame}</Text>
-            <Text>You are tasked with as the record keeper.</Text>
+            <Text> • You are tasked with as the record keeper.</Text>
             <Card.Actions>
               <TouchableOpacity onPress={handleOpenAlert}>
                 <Text style={styles.underline}>Class List</Text>
@@ -318,9 +324,25 @@ const AccountsScreen = ({navigation}) => {
     setShowLoading(false);
   };
 
+  const renderRow = ({ item }) => (
+    <View style={styles.row}>
+      <Text style={[styles.cell, styles.text]}>{item.name}</Text>
+      <Text style={[styles.cell, styles.text]}>{item.stuid}</Text>
+      <Text style={[styles.cell, styles.text]}>{item.yearsec}</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>API URL: { check }</Text>
+      {!userRole && (
+      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>API URL: { check }</Text>)}
+      {userRole && (
+          <Image
+          source={require('./assets/CCSIT.png')} 
+          style={styles.logo}
+          resizeMode="contain" 
+          />
+      )}
       {isLoggedIn ? (
         <View style={styles.loggedInContainer}>
           <Text style={styles.welcomeText}>Welcome, {accountName}!</Text>
@@ -390,9 +412,16 @@ const AccountsScreen = ({navigation}) => {
           navigation.navigate('SettingsScreen');}}>
             <Text style={styles.buttonText}>Api Settings</Text>
       </TouchableOpacity>
-
+      
+      {userRole && (
+      <TouchableOpacity style={styles.loginButton55} onPress={() => {
+          navigation.navigate('MainPage');}}>
+            <Text style={styles.buttonText}>Home Screen</Text>
+      </TouchableOpacity>)}
       <Modal visible={isAlertVisible} transparent animationType="slide">
+        
         <View style={styles.modal}>
+        
           <View style={styles.modalContent}>
             {/* Picker for selecting an option */}
             <Picker
@@ -401,36 +430,37 @@ const AccountsScreen = ({navigation}) => {
               style={styles.picker}
             >
               <Picker.Item label="Select an Option..." value={null} />
-              {options.map((option, index) => (
-                <Picker.Item key={index} label={option} value={option} />
+              {options && Array.isArray(options) && options.length > 0 && options.map((option, index) => (
+                option !== '' && (
+                  <Picker.Item
+                    key={index}
+                    label={option}
+                    value={option}
+                  />
+                )
               ))}
             </Picker>
 
             {/* Close button in the alert */}
             
-
-            {/* Display fetched data */}
-            {data.length > 0 && (
-              <View style={styles.table}>
-                <View style={styles.row}>
-                  <Text style={styles.header}>Name</Text>
-                  <Text style={styles.header}>Student ID</Text>
-                  <Text style={styles.header}>Year Section</Text>
+            <FlatList
+              data={data}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderRow}
+              ListHeaderComponent={() => (
+                <View style={[styles.row, styles.header]}>
+                  <Text style={[styles.cell, styles.text]}>Name</Text>
+                  <Text style={[styles.cell, styles.text]}>Student ID</Text>
+                  <Text style={[styles.cell, styles.text]}>Year Section</Text>
                 </View>
-            
-              {data.map((item, index) => (
-                <View style={styles.row} key={index}>
-                  <Text style={styles.cell}>{item.name}</Text>
-                  <Text style={styles.cell}>{item.stuid}</Text>
-                  <Text style={styles.cell}>{item.yearsec}</Text>
-                </View>
-              ))}
-              </View>
-            )}
+              )}
+            />
           </View>
+          
           <TouchableOpacity onPress={handleCloseAlert} style={styles.closeButton}>
               <Text style={styles.closeButtonText}>Close</Text>
         </TouchableOpacity>
+        
         </View>
         
       </Modal>
@@ -476,7 +506,9 @@ const styles = StyleSheet.create({
   },
   loginContainer3: {
     backgroundColor: '#ffffff',
-    padding: 20, 
+    padding: 60,
+    paddingBottom: 20,
+    paddingTop: 20,
   },
   loginText: {
     fontSize: 24,
@@ -491,6 +523,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 5,
     marginRight: 25,
+  },
+  logo: {
+    position: 'absolute',
+    top: 50,
+    width: 150,
+    height: 150, 
+    marginBottom: 30,
+    alignSelf: 'center'
   },
   focusedInput: {
     borderColor: '#3498db', 
@@ -550,25 +590,17 @@ const styles = StyleSheet.create({
   },
   loginContainer1: {
     backgroundColor: '#ffffff',
-    padding: 20,
-    MaxWidth: '100%',
-    borderRadius: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
+    width: '100%',
     elevation: 5,
-    borderBottomLeftRadius: 0, 
-    borderBottomRightRadius: 0, 
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
   },
   loginContainer2: {
     backgroundColor: '#ffffff',
-    padding: 20,
-    MaxWidth: '100%',
-    borderRadius: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
+    width: '100%',
     elevation: 5,
-    borderBottomLeftRadius: 0, 
-    borderBottomRightRadius: 0, 
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
   },
   modal: {
     flex: 1,
@@ -583,10 +615,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 4,
     borderColor: 'rgba(0, 0, 0, 0.1)',
-    width: '80%', // Adjust the width as needed
+    width: '80%', 
+    height: 'auto',
+    maxHeight: '80%'
   },
   picker: {
-    width: '100%', // Make the picker take full width
+    width: '100%', 
   },
   closeButton: {
     width: '80%',
@@ -600,32 +634,48 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  table: {
-    marginTop: 20,
-    width: '100%',
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
+    width: '83%'
   },
   header: {
     fontWeight: 'bold',
     flex: 2,
-    width: 100,
+    width: '83%',
     textAlign: 'center',
     borderWidth: 1,
     padding: 5,
   },
   cell: {
     flex: 2,
-    width: 100,
+    width: '30%',
     textAlign: 'center',
+    margin: 1,
     borderWidth: 1,
     padding: 5,
   },
-  underline: {textDecorationLine: 'underline'},
-  
+  underline: {
+    textDecorationLine: 'underline',
+    fontSize: 11,
+  },
+  centeredActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  loginButton55: {
+    position: 'absolute',
+    backgroundColor: '#3498db',
+    width: '99%',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    bottom: 2,
+    margin: 20
+  },
 });
 
 export default AccountsScreen;

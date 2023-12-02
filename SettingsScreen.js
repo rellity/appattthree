@@ -3,10 +3,14 @@ import { View, Text, TextInput, StyleSheet, Alert, ToastAndroid, TouchableHighli
 import { useNavigation } from '@react-navigation/native';
 import { CheckBox, Card } from 'react-native-elements';
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 const SettingsScreen = () => {
   const [apiUrl, setApiUrl] = useState('');
   const [useHttps, setUseHttps] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null);
+  const [showLoading, setShowLoading] = useState(false);
 
   useEffect(() => {
     const fetchApiUrl = async () => {
@@ -83,10 +87,28 @@ const SettingsScreen = () => {
     });
   };
 
+  const handleTestApi = async () => {
+    setShowLoading(true);
+    try {
+      const response = await axios.get(`${apiUrl}/test_api.php`);
+
+      if (response.data) {
+        setApiResponse(response.data.message);
+      } else {
+        setApiResponse('server call failed');
+      }
+    } catch (error) {
+      console.error('error:', error);
+      setApiResponse('sever call failed');
+    }
+    setShowLoading(false);
+    ToastAndroid.showWithGravityAndOffset(`${apiResponse}`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50)
+  };
+
   return (
     <View style={styles.container}>
       <Card containerStyle={styles.cardContainer}>
-        <Card.Title style={styles.title}>API Settings</Card.Title>
+        <Card.Title style={styles.title}>Server Settings</Card.Title>
         <TextInput
           placeholder="Enter API URL"
           value={apiUrl.replace(/^(https?|ftp):\/\//, '')}
@@ -103,6 +125,13 @@ const SettingsScreen = () => {
             textStyle={styles.checkboxText}
           />
         </View>
+        <TouchableHighlight
+          style={styles.saveButton}
+          underlayColor="#2980b9"
+          onPress={handleTestApi}
+        >
+          <Text style={{ color: 'white', fontSize: 16 }}>Test Server</Text>
+        </TouchableHighlight>
 
         <TouchableHighlight
           style={styles.saveButton}
@@ -113,6 +142,19 @@ const SettingsScreen = () => {
         </TouchableHighlight>
 
       </Card>
+
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF"
+      />
     </View>
   );
 };

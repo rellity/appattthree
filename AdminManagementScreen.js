@@ -1,37 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, TextInput, Button, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  Alert,
+} from 'react-native';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import * as SecureStore from 'expo-secure-store';
 import { AntDesign } from '@expo/vector-icons';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
-const AdminItem = ({ item, onEdit, onDelete }) => (
-  <View style={styles.tableHeader}>
-    <Text style={styles.headerCell}>{item.uname}</Text>
-    <Text style={styles.headerCell}>{item.pass}</Text>
-    <Text style={styles.headerCell}>{item.fname}</Text>
-    <View style={styles.actionButtons}>
-      <TouchableOpacity onPress={() => onEdit(item)}>
-      <AntDesign name="edit" size={32} color="green" />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(item.id)}>
-      <AntDesign name="delete" size={32} color="red" />
-      </TouchableOpacity>
-    </View>
-  </View>
-);
-
 const AdminManagementScreen = () => {
   const [admins, setAdmins] = useState([]);
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [uname, setName] = useState('');
-  const [pass, setPassword] = useState('');
+  const [uname, setUname] = useState('');
+  const [pass, setPass] = useState('');
   const [fname, setFname] = useState('');
   const { apiUrl } = useApiUrl();
   const [api, setApiUrl] = useState('');
-  const [showLoading, setLoading] = useState(false); //loading animation flag
+  const [showLoading, setShowLoading] = useState(false);
+  const [maskModalPassword, setMaskModalPassword] = useState(false);
+
+  const maskPassword1 = (password) => {
+    if (maskModalPassword) {
+      return password;
+    } else {
+      return '*'.repeat(password.length);
+    }
+  };
+
+  const check = [api || apiUrl];
 
   useEffect(() => {
     const fetchApiUrl = async () => {
@@ -46,78 +50,66 @@ const AdminManagementScreen = () => {
     };
 
     fetchApiUrl();
-    console.log({ api });
   }, []);
-
-  const check = [api || apiUrl];
 
   useEffect(() => {
     fetchAdmins();
+    console.log(maskModalPassword);
   }, []);
 
   const fetchAdmins = async () => {
-    setLoading(true);
+    setShowLoading(true);
     try {
       const response = await axios.get(`${check}/attappthree/admfetch.php`);
-      const adminsArray = response.data.admins;
-
-      setAdmins(adminsArray);
+      setAdmins(response.data.admins);
     } catch (error) {
       console.error('Error fetching admins:', error);
     }
-    setLoading(false);
+    setShowLoading(false);
   };
 
   const handleOpenModal = (admin) => {
-    console.log(admin.id);
     setSelectedAdmin(admin);
     setModalVisible(true);
-    setName(admin.uname);
-    setPassword(admin.pass);
+    setUname(admin.uname);
+    setPass(admin.pass);
     setFname(admin.fname);
+    setMaskModalPassword(false)
   };
 
   const handleOpenModalAdd = () => {
     setModalVisible(true);
     clearInputs();
+    setMaskModalPassword(false)
   };
 
   const handleCloseModal = () => {
     setSelectedAdmin(null);
     setModalVisible(false);
+    clearInputs();
+    setMaskModalPassword(false)
   };
 
   const handleSaveAdmin = async () => {
     try {
-      if (selectedAdmin) {
-        console.log(selectedAdmin.id)
-        await axios.get(`${check}/attappthree/editadm.php`, {
-          params: {
-            id: selectedAdmin.id,
-            uname,
-            pass,
-            fname,
-          },
-        });
-        Alert.alert('Admin updated successfully');
-        fetchAdmins();
-      } else {
-        // Add new admin
-        await axios.get(`${check}/attappthree/createadm.php`, {
-          params: {
-            uname,
-            pass,
-            fname,
-          },
-        });
-        Alert.alert('Admin added successfully');
-      }
+      const url = selectedAdmin
+        ? `${check}/attappthree/editadm.php`
+        : `${check}/attappthree/createadm.php`;
 
+      await axios.get(url, {
+        params: {
+          id: selectedAdmin?.id,
+          uname,
+          pass,
+          fname,
+        },
+      });
+
+      Alert.alert('Admin ' + (selectedAdmin ? 'updated' : 'added') + ' successfully');
       fetchAdmins();
       handleCloseModal();
     } catch (error) {
       console.error('Error saving admin:', error);
-      // Handle error
       Alert.alert('Error', 'Failed to save admin');
     }
   };
@@ -145,49 +137,82 @@ const AdminManagementScreen = () => {
       );
     } catch (error) {
       console.error('Error deleting admin:', error);
-      // Handle error
       Alert.alert('Error', 'Failed to delete admin');
     }
   };
 
+  const AdminItem = ({ item }) => (
+    <View style={styles.adminItemContainer}>
+      <View style={styles.adminItemContent}>
+        <View style={styles.adminItemRow}>
+          <Text style={styles.adminItemLabel}>username:</Text>
+          <Text style={styles.adminItemValue}>{item.uname}</Text>
+        </View>
+        <View style={styles.adminItemRow}>
+          <Text style={styles.adminItemLabel}>password:</Text>
+          <Text style={styles.adminItemValue}>
+            {selectedAdmin && selectedAdmin.id === item.id && !maskModalPassword ? item.pass : '*'.repeat(item.pass.length)}
+          </Text>
+        </View>
+        <View style={styles.adminItemRow}>
+          <Text style={styles.adminItemLabel}>fullname:</Text>
+          <Text style={styles.adminItemValue}>{item.fname}</Text>
+        </View>
+      </View>
+      <View style={styles.adminItemActions}>
+        <TouchableOpacity onPress={() => handleOpenModal(item)} style={styles.editButton}>
+          <AntDesign name="edit" size={30} color="green" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleDeleteAdmin(item.id)} style={styles.deleteButton}>
+          <AntDesign name="delete" size={30} color="red" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );  
+
   const renderHeader = () => (
     <View style={styles.tableHeader}>
-      <Text style={styles.headerCell}>Username</Text>
-      <Text style={styles.headerCell}>Password</Text>
-      <Text style={styles.headerCell}>Full Name</Text>
-      <Text style={styles.headerCell}>Actions</Text>
+      <Text style={styles.headerCell}>Accounts List</Text>
     </View>
   );
 
-  const renderItem = ({ item }) => (
-    <AdminItem
-      item={item}
-      onEdit={handleOpenModal}
-      onDelete={handleDeleteAdmin}
-    />
-  );
-
   const clearInputs = () => {
-    setName('');
-    setPassword('');
+    setUname('');
+    setPass('');
     setFname('');
+  };
+
+  const handleUnameChange = (text) => {
+    const formattedText = text.replace(/\s/g, '').toLowerCase();
+    if (formattedText.length <= 10) {
+      setUname(formattedText);
+    }
+  };
+
+  const handlePassChange = (text) => {
+    const formattedText = text.replace(/\s/g, '').toLowerCase();
+    if (formattedText.length <= 10) {
+      setUname(formattedText);
+    }
+  };
+
+  const handleFnameChange = (text) => {
+    if (text.length <= 30) {
+      setFname(text);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Officer Accounts Management Screen</Text>
-
+      <View>
+        <Text style={styles.headerText}>Officer Accounts Management Screen</Text>
+      </View>
       <FlatList
         ListHeaderComponent={renderHeader}
         data={admins}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
+        renderItem={({ item }) => <AdminItem item={item} />}
       />
-
-      <TouchableOpacity style={styles.addButton} onPress={handleOpenModalAdd}>
-        <Text style={styles.buttonText}>Add Admin</Text>
-      </TouchableOpacity>
-
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modal}>
           <View style={styles.modalContent}>
@@ -196,36 +221,29 @@ const AdminManagementScreen = () => {
               style={styles.input}
               placeholder="Username"
               value={uname}
-              onChangeText={(text) => setName(text)}
+              onChangeText={handleUnameChange}
             />
             <TextInput
               style={styles.input}
               placeholder="Password"
               value={pass}
-              onChangeText={(text) => setPassword(text)}
+              onChangeText={handlePassChange}
             />
             <TextInput
               style={styles.input}
               placeholder="Full Name"
               value={fname}
-              onChangeText={(text) => setFname(text)}
+              onChangeText={handleFnameChange}
             />
           </View>
-          <View style={{ width: '80%', flexDirection: 'row', justifyContent: 'space-between' }}>
-          <TouchableOpacity 
-            title="Save"
-            onPress={handleSaveAdmin}
-            style={styles.btnT1}>
-            
-            <Text style={styles.btnT1Text}>Save</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            title="Cancel"
-            onPress={handleCloseModal}
-            style={styles.btnT1}>
-               <Text style={styles.btnT1Text}>Close</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.modalButtonsContainer}>
+            <TouchableOpacity onPress={handleSaveAdmin} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCloseModal} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
       <AwesomeAlert
@@ -238,8 +256,11 @@ const AdminManagementScreen = () => {
         showConfirmButton={false}
         contentContainerStyle={styles.alertContainer}
         titleStyle={styles.alertTitle}
-        progressColor="#007AFF" 
+        progressColor="#007AFF"
       />
+      <TouchableOpacity style={styles.addButton} onPress={handleOpenModalAdd}>
+        <Text style={styles.buttonText}>Add Admin</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -249,7 +270,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)'
   },
   headerText: {
     fontSize: 20,
@@ -257,7 +278,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   addButton: {
-    width: "80%",
+    width: '80%',
     backgroundColor: 'blue',
     padding: 15,
     borderRadius: 4,
@@ -283,6 +304,29 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.1)',
     width: '80%',
   },
+  modalButtonsContainer: {
+    width: '80%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 5,
+    marginLeft: 10,
+  },
+  modalButton: {
+    width: '48%',
+    padding: 10,
+    backgroundColor: 'blue',
+    borderRadius: 4,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   input: {
     height: 40,
     borderColor: 'gray',
@@ -293,52 +337,66 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   headerCell: {
-    width: 100,
+    width: '98%',
     textAlign: 'center',
     borderWidth: 1,
-    padding: 2,
+    padding: 4,
+    margin: 2,
     marginBottom: 5,
   },
-  
-  editButton: {
-    backgroundColor: 'green',
-    padding: 10,
-    borderRadius: 4,
-    marginRight: 5,
+  alertContainer: {
+    backgroundColor: 'white',
+    padding: 15,
+    borderRadius: 10,
   },
-  deleteButton: {
-    backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 4,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 3,
-    marginLeft: 10,
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   tableHeader: {
     flexDirection: 'row',
   },
-  btnT1: {
-    width: '48%',
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: 'blue', // Adjust the color as needed
-    borderRadius: 4,
+  adminItemContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5', // Background color
+    padding: 16,
+    marginBottom: 10,
+    borderRadius: 8,
+    elevation: 2, // Shadow for Android
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
   },
-  btnT1Text: {
-    color: 'white',
+  adminItemContent: {
+    flex: 1,
+  },
+  adminItemRow: {
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  adminItemLabel: {
     fontWeight: 'bold',
-    textAlign: 'center',
+    marginRight: 4,
+  },
+  adminItemValue: {
+    flex: 1,
+  },
+  adminItemActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editButton: {
+    marginRight: 10,
+  },
+  deleteButton: {
+    marginLeft: 10,
   },
 });
 

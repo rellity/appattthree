@@ -35,7 +35,7 @@ const MainPage = ({ route,navigation }) => {
         style={styles.button}
         onPress={() => navigation.navigate('BarcodeGenerator')}
       >
-        <Text style={styles.buttonText}>Generate Student 2d Code</Text>
+        <Text style={styles.buttonText}>Student Registration</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
@@ -57,7 +57,7 @@ const MainPage = ({ route,navigation }) => {
           navigation.navigate('SettingsScreen');
         }}
       >
-        <Text style={styles.buttonText}>API Settings</Text>
+        <Text style={styles.buttonText}>Server Settings</Text>
       </TouchableOpacity>
       
     </View>

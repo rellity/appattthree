@@ -20,7 +20,7 @@ const OptionSelector = () => {
   const [selectedLog, setselectedLog] = useState(null);
   const [purgeOptionsModalVisible, setPurgeOptionsModalVisible] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
-  const [flag, setFlag] = useState(null);
+  const [flag, setFlag] = useState(false);
 
   useEffect(() => {
     setShowLoading(false);
@@ -97,7 +97,7 @@ const OptionSelector = () => {
     };
   
     const gmt8Date = new Date(dateString);
-    gmt8Date.setHours(gmt8Date.getHours() + 8); // Add 8 hours for GMT+8
+    gmt8Date.setHours(gmt8Date.getHours()); // Add 8 hours for GMT+8
   
     return gmt8Date.toLocaleString('en-US', options);
   };
@@ -132,33 +132,34 @@ const OptionSelector = () => {
   };
 
   const handleOptionChange = async (itemValue) => {
-
     setSelectedOption(itemValue);
-
+  
     console.log('Selected option:', itemValue);
-    
   
     try {
       if (itemValue) {
         const check = api || apiUrl;
         const responselink = `${check}/attappthree/getOptionsInfo.php`;
-
-        const response = await axios.get(responselink,{ params: {value: itemValue},});
+  
+        const response = await axios.get(responselink, { params: { value: itemValue } });
   
         if (response.data.error) {
           // error handling
           Alert.alert('Error fetching data for the selected table:', response.data.error);
-          setTableData([]); 
+          setTableData([]);
         } else {
-          // output data
-          setTableData(response.data);
+          // Check if the data array is not empty before setting it
+          if (Array.isArray(response.data) && response.data.length > 0) {
+            setTableData(response.data);
+          } else {
+            setTableData([]);
+          }
         }
   
         // log , tanggalon ni basta 
         console.log('Response data:', response.data);
-        setFlag(response.data.status);
       } else {
-        setTableData([]); // clear table data????u  
+        setTableData([]); // clear table data
       }
     } catch (error) {
       Alert.alert('Error fetching data for the selected table:', error);
@@ -304,6 +305,12 @@ const OptionSelector = () => {
     });
   };
 
+  useEffect(() => {
+    if (tableData.length > 0) {
+      setFlag(tableData[0]?.status === 'ongoing');
+    }
+  }, [tableData]);
+
   return (
     <View style={styles.container}>
       <Title style={styles.title}>View Events</Title>
@@ -314,12 +321,14 @@ const OptionSelector = () => {
       >
         
         <Picker.Item label="Select an Event Option..." value={null} />
-        {options.map((option, index) => (
-          <Picker.Item
-            key={index}
-            label={option}
-            value={option}
-          />
+        {options && Array.isArray(options) && options.length > 0 && options.map((option, index) => (
+          option !== '' && (
+            <Picker.Item
+              key={index}
+              label={option}
+              value={option}
+            />
+          )
         ))}
       </Picker>
       <Picker
@@ -381,7 +390,7 @@ const OptionSelector = () => {
           style={styles.sbutton}
           title="Modify"
           onPress={() => {
-            if (selectedOption && flag === 'ongoing') {
+            if (selectedOption && flag === true) {
               setPurgeOptionsModalVisible(true), { selectedMode };
             } else {
               // error handling
