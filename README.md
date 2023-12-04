@@ -7,7 +7,7 @@ ok, unsaon pag install :
 
 open ug bisag unsa nga command line, cmd, powershell or bash ikaw na bahala, adto sa gusto nimo na path
 
-sample C:\Users\ADMIN\Desktop\
+sample ```C:\Users\ADMIN\Desktop\```
 
 i run ni ```git clone https://github.com/rellity/appattthree.git```
 
@@ -27,9 +27,3 @@ then mao ra to free na nimo usbon tanan kopyahon or i fork ni
 paki credit lamang ko char
 \
 ug kaya nimo basahon ning code nahu hahahhahahahahha
-\
-
-
-
-
-
