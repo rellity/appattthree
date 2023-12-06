@@ -5,12 +5,14 @@ import { CheckBox, Card } from 'react-native-elements';
 import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import { useApiUrl } from './ApiUrlContext';
 
 const SettingsScreen = () => {
   const [apiUrl, setApiUrl] = useState('');
   const [useHttps, setUseHttps] = useState(false);
   const [apiResponse, setApiResponse] = useState(null);
   const [showLoading, setShowLoading] = useState(false);
+  const { resetNavigationStack } = useApiUrl();
 
   useEffect(() => {
     const fetchApiUrl = async () => {
@@ -80,30 +82,41 @@ const SettingsScreen = () => {
     }
   };
 
-  const handleResetStack = () => {
+  const handleResetStack = (valuef) => {
+    resetNavigationStack();
+
     navigation.reset({
       index: 0,
       routes: [{ name: 'MainPage' }],
     });
   };
+  
 
   const handleTestApi = async () => {
     setShowLoading(true);
     try {
       const response = await axios.get(`${apiUrl}/test_api.php`);
-
+  
       if (response.data) {
-        setApiResponse(response.data.message);
+        setApiResponse('api call success');
+        setShowLoading(false);
+        ToastAndroid.showWithGravityAndOffset(`api call success`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
+      } else if (response.data == null) {
+          setShowLoading(false);
+          ToastAndroid.showWithGravityAndOffset(`press again`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
       } else {
         setApiResponse('server call failed');
+        setShowLoading(false);
       }
+
     } catch (error) {
       console.error('error:', error);
-      setApiResponse('sever call failed');
+      ToastAndroid.showWithGravityAndOffset(`server call failed`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
+      setShowLoading(false);
     }
-    setShowLoading(false);
-    ToastAndroid.showWithGravityAndOffset(`${apiResponse}`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50)
   };
+  
+  
 
   return (
     <View style={styles.container}>

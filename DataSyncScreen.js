@@ -232,7 +232,7 @@ const DataSyncScreen = () => {
   };
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16 }}>
+    <ScrollView style={{ flex: 1, padding: 16, backgroundColor: 'white', }}>
       <Card>
         <Card.Content>
           <Title>Import Data</Title>
@@ -285,7 +285,7 @@ const DataSyncScreen = () => {
       {/* Export CSV File */}
       <Card style={{ marginTop: 16 }}>
         <Card.Content>
-          <Title>Export CSV File</Title>
+          <Title>Export Event SpreadSheet</Title>
           <Picker
             selectedValue={selectedOption}
             onValueChange={handleOptionChange}

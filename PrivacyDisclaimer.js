@@ -11,7 +11,10 @@ const PrivacyDisclaimer = ({ isVisible, onClose }) => {
         <Text style={styles.content}>
           Republic Act 10173 - Data Privacy Act of 2012
           {'\n\n'}
-          General Data Privacy Principles. The processing of personal information shall be allowed, subject to compliance with the requirements of this Act and other laws allowing disclosure of information to the public and adherence to the principles of transparency, legitimate purpose, and proportionality.
+          General Data Privacy Principles. The processing of personal information shall be allowed,{'\n'}
+          subject to compliance with the requirements of this Act and other laws allowing disclosure{'\n'}
+          of information to the public and adherence to the principles of transparency, legitimate purpose,{'\n'}
+          and proportionality.
         </Text>
         
       </View>

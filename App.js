@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import MainPage from './MainPage';
@@ -18,8 +18,14 @@ import AdminManagementScreen from './AdminManagementScreen';
 const Stack = createStackNavigator();
 
 function App() {
+  const [apiUrlProviderKey, setApiUrlProviderKey] = useState(0);
+
+  const resetNavigationStack = () => {
+    setApiUrlProviderKey((prevKey) => prevKey + 1);
+  };
+
   return (
-    <ApiUrlProvider> 
+    <ApiUrlProvider key={apiUrlProviderKey}> 
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Main">
           <Stack.Screen
@@ -27,13 +33,16 @@ function App() {
             component={MainPage}
             options={{
               title: 'ICTS Logger',
-              headerRight: () => <AppHeader />, // Add the custom header to the headerRight
+              headerRight: () => <AppHeader />,
             }}
           />
           <Stack.Screen name="AccountsScreen" component={AccountsScreen} options={{ title: ' ', headerShown: false }} />
           <Stack.Screen name="BarcodeGenerator" component={BarcodeGenerator} options={{ title: ' ' }} />
           <Stack.Screen name="BarcodeScanner" component={BarCodeScanner} options={{ title: ' ' }} />
-          <Stack.Screen name="OptionSelector" component={OptionSelector} options={{ title: ' ' }} />
+          <Stack.Screen name="OptionSelector" 
+            component={OptionSelector} 
+            options={{ 
+              title: ' '}} />
           <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: ' ' }} />
           <Stack.Screen name="EventCreationScreen" component={EventCreationScreen} options={{ title: ' ' }} />
           <Stack.Screen name="StudentLookupScreen" component={StudentLookupScreen} options={{ title: ' ' }} />

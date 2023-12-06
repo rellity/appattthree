@@ -105,9 +105,13 @@ const AdminManagementScreen = () => {
         },
       });
 
-      Alert.alert('Admin ' + (selectedAdmin ? 'updated' : 'added') + ' successfully');
-      fetchAdmins();
-      handleCloseModal();
+      Alert.alert('Admin ' + (selectedAdmin ? 'updated' : 'added') + ' successfully', '',
+      [{
+        text: 'OK',
+        onPress: () => { fetchAdmins();
+                        handleCloseModal();
+      }},
+      ]);
     } catch (error) {
       console.error('Error saving admin:', error);
       Alert.alert('Error', 'Failed to save admin');
@@ -192,7 +196,7 @@ const AdminManagementScreen = () => {
   const handlePassChange = (text) => {
     const formattedText = text.replace(/\s/g, '').toLowerCase();
     if (formattedText.length <= 10) {
-      setUname(formattedText);
+      setPass(formattedText);
     }
   };
 

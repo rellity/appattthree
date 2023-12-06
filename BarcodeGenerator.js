@@ -331,21 +331,12 @@ function BarcodeGenerator() {
 
             
 
-            <Text style={styles.footerText}>ICTS 2023-2024</Text>
-
-            {/* Add a button for downloading the image */}
-            <TouchableOpacity
-              style={styles.downloadButton}
-              onPress={handleShare}
-            >
-              <Text style={styles.downloadButtonText}>Share Barcode</Text>
-            </TouchableOpacity>
-
+            <Text style={styles.footerText}>ICTS 2023-2024</Text>         
           </View>
         )}
         <Dialog.Actions>
-          <Dialog.Button title="Share Barcode" onPress={handleShare} />
           <Dialog.Button title="Close" onPress={closeBarcodeDialog} />
+          <Dialog.Button title="Share Barcode" onPress={handleShare}/>
         </Dialog.Actions>
       </Dialog>
 

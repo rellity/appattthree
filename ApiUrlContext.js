@@ -5,7 +5,7 @@ import { Alert } from 'react-native';
 const ApiUrlContext = createContext();
 
 const ApiUrlProvider = ({ children }) => {
-  const [apiUrl, setApiUrl] = useState('');
+  const [apiUrl, setApiUrl] = useState('http://alogger.ccsit.info');
 
   const setUrl = async (url) => {
     try {
@@ -16,24 +16,28 @@ const ApiUrlProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        Alert.alert('Error fetching API URL:', error);
-        // error handling idk
+  const fetchApiUrl = async () => {
+    try {
+      const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
+      if (storedApiUrl) {
+        setApiUrl(storedApiUrl);
       }
-    };
+    } catch (error) {
+      Alert.alert('Error fetching API URL:', error);
+      // error handling idk
+    }
+  };
 
+  const resetNavigationStack = () => {
+    fetchApiUrl();
+  };
+
+  useEffect(() => {
     fetchApiUrl();
   }, []);
 
   return (
-    <ApiUrlContext.Provider value={{ apiUrl, setUrl }}>
+    <ApiUrlContext.Provider value={{ apiUrl, setUrl, resetNavigationStack }}>
       {children}
     </ApiUrlContext.Provider>
   );

@@ -1,12 +1,15 @@
 import React,{ useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Image, ToastAndroid } from 'react-native';
 import { useApiUrl } from './ApiUrlContext';
 import * as SecureStore from 'expo-secure-store';
+import axios from 'axios';
 
 const MainPage = ({ route,navigation }) => {
   const { apiUrl } = useApiUrl();
   const updatedApiUrl = route.params ? route.params.updatedApiUrl : null;
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [accountName, setAccountName] = useState('');
+  
   useEffect(() => {
     SecureStore.getItemAsync('isLoggedIn')
       .then((storedIsLoggedIn) => {
@@ -17,6 +20,43 @@ const MainPage = ({ route,navigation }) => {
       .catch((error) => console.error('Error reading from SecureStore:', error));
 
   }, [navigation]);
+
+  // const addLogs = ( async() => {
+  //   await axios.get(`${apiUrl}/attappthree/mainlog.php`, { params: { username: accountName } })
+  //   .then(() =>ToastAndroid.showWithGravityAndOffset(
+  //     'logged',
+  //     ToastAndroid.LONG,
+  //     ToastAndroid.BOTTOM,
+  //     25,
+  //     50
+  //   )).catch((error) => ToastAndroid.showWithGravityAndOffset(
+  //     'logging failed',
+  //     ToastAndroid.LONG,
+  //     ToastAndroid.BOTTOM,
+  //     25,
+  //     50
+  //   ));
+
+  // });
+
+  // useEffect(() => {
+  //   SecureStore.getItemAsync('isLoggedIn')
+  //   .then((storedIsLoggedIn) => {
+  //     const isLoggedIn = storedIsLoggedIn === 'true' || storedIsLoggedIn === true;
+  //     setIsLoggedIn(isLoggedIn);
+      
+  //     if (isLoggedIn) {
+  //       SecureStore.getItemAsync('accountName').then((storedAccountName) => {
+  //         setAccountName(storedAccountName);
+  //       });
+  //     }
+  //   })
+  //   .catch((error) => console.error('Error reading from SecureStore:', error));
+    
+  //   if (isLoggedIn) {
+  //     addLogs();
+  //   }
+  // }, []);
 
   return (
     <View style={styles.container}>

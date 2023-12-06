@@ -7,6 +7,7 @@ import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import { AntDesign } from '@expo/vector-icons';
 
 const AccountsScreen = ({navigation}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -44,18 +45,17 @@ const AccountsScreen = ({navigation}) => {
 
   const check = [ api || apiUrl ];
 
-  useEffect(() => {
-    // Fetch options from PHP API
-    const fetchOptions = async () => {
-      try {
-        const response = await axios.get(`${check}/attappthree/getclasses.php`);
-        setOptions(response.data);
-      } catch (error) {
-        console.error('Error fetching options:', error);
-        // Handle error (e.g., show an error message)
-      }
-    };
+  const fetchOptions = async () => {
+    try {
+      const response = await axios.get(`${check}/attappthree/getclasses.php`);
+      setOptions(response.data);
+    } catch (error) {
+      console.error('Error fetching options:', error);
+      // Handle error (e.g., show an error message)
+    }
+  };
 
+  useEffect(() => {
     fetchOptions();
   }, []);
 
@@ -324,18 +324,56 @@ const AccountsScreen = ({navigation}) => {
     setShowLoading(false);
   };
 
+  const handleDeleteRecord = async (recordId, value) => {
+    try {
+      Alert.alert(
+        'Delete Record',
+        'Are you sure you want to delete this record?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Delete',
+            onPress: async () => {
+              res = await axios.get(`${check}/attappthree/deletestu.php?id=${recordId}`);
+              Alert.alert('Record deleted successfully', '', [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    fetchOptions();
+                    handlePickerChange(selectedOption);
+                    console.log(res.data);
+                  },
+                },
+              ]);
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      console.error('Error deleting record:', error);
+      Alert.alert('Error', 'Failed to delete record');
+    }
+  };
+
   const renderRow = ({ item }) => (
     <View style={styles.row}>
       <Text style={[styles.cell, styles.text]}>{item.name}</Text>
       <Text style={[styles.cell, styles.text]}>{item.stuid}</Text>
       <Text style={[styles.cell, styles.text]}>{item.yearsec}</Text>
+      <TouchableOpacity onPress={() => handleDeleteRecord(item.id)} style={styles.cell}>
+        <AntDesign name="delete" size={22} color="red" style={{alignSelf: 'center'}}/>
+      </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
       {!userRole && (
-      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>API URL: { check }</Text>)}
+      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>SERVER URL: { check }</Text>)}
       {userRole && (
           <Image
           source={require('./assets/CCSIT.png')} 
@@ -410,7 +448,7 @@ const AccountsScreen = ({navigation}) => {
       )}
       <TouchableOpacity style={styles.loginButton1} onPress={() => {
           navigation.navigate('SettingsScreen');}}>
-            <Text style={styles.buttonText}>Api Settings</Text>
+            <Text style={styles.buttonText}>Server Settings</Text>
       </TouchableOpacity>
       
       {userRole && (
@@ -447,14 +485,13 @@ const AccountsScreen = ({navigation}) => {
               data={data}
               keyExtractor={(item, index) => index.toString()}
               renderItem={renderRow}
-              ListHeaderComponent={() => (
-                <View style={[styles.row, styles.header]}>
-                  <Text style={[styles.cell, styles.text]}>Name</Text>
-                  <Text style={[styles.cell, styles.text]}>Student ID</Text>
-                  <Text style={[styles.cell, styles.text]}>Year Section</Text>
-                </View>
-              )}
-            />
+              ListHeaderComponent={() => {
+                if (!data || data.length === 0) {
+                  // Render nothing or a loading indicator if data is not available
+                  return null;
+                }
+                }
+              }/>
           </View>
           
           <TouchableOpacity onPress={handleCloseAlert} style={styles.closeButton}>
@@ -635,10 +672,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   row: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
-    width: '83%'
+    width: '93%',
+    alignSelf: 'center'
   },
   header: {
     fontWeight: 'bold',
@@ -649,8 +688,8 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   cell: {
-    flex: 2,
-    width: '30%',
+    flex: 0,
+    width: '25%',
     textAlign: 'center',
     margin: 1,
     borderWidth: 1,

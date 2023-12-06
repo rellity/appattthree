@@ -101,6 +101,12 @@ const StudentLookupScreen = () => {
     setShowLoading(false);
   };
 
+  const handleInputChange = (text) => {
+    if (/^\d{0,7}-?\d{0,1}$/.test(text)) {
+      setIdNumber(text);
+    }
+  };
+
 
   return (
     <View style={styles.container}>
@@ -108,7 +114,7 @@ const StudentLookupScreen = () => {
       <TextInput
         style={styles.input}
         value={idNumber}
-        onChangeText={(text) => setIdNumber(text)}
+        onChangeText={handleInputChange}
         placeholder="ID Number"
       />
       <TouchableOpacity style={styles.button} onPress={handleLookup}>
@@ -143,7 +149,7 @@ const StudentLookupScreen = () => {
                           {
                             Object.keys(eventDataValue).map((key) => (
                               <Text key={`${eventKey}-${key}`}>
-                                {key}: {eventDataValue[key] ? 'present' : 'absent'}
+                                {key}: {eventDataValue[key] ? 'Present' : 'Absent'}
                               </Text>
                             ))
                           }
