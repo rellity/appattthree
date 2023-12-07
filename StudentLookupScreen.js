@@ -11,27 +11,9 @@ const StudentLookupScreen = () => {
   const [eventData, setEventData] = useState(null);
   const [fineData, setFineData] = useState(null);
   const { apiUrl } = useApiUrl();
-  const [api, setApiUrl] = useState('')
   const [showLoading, setShowLoading] = useState(false);
-  
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
 
-    fetchApiUrl();
-  }, []);
-
-  const check = [api || apiUrl];
-  console.log(check);
-
+  const check = [apiUrl];
 
   const handleLookup = async () => {
     setShowLoading(true);
@@ -50,7 +32,6 @@ const StudentLookupScreen = () => {
       });
   
       if (response.data && response.data.error) {
-        // Check if the response contains an error property
         Alert.alert('Student not found.');
       } else if (response.data) {
         setStudentData(response.data);

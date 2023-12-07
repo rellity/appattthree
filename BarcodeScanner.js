@@ -27,23 +27,6 @@ export default function App() {
   const [flashMode, setFlashMode] = useState(false);
 
 
-
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-  }, []);
-
-
   useEffect(() => {
     
     (async () => {
@@ -65,7 +48,7 @@ export default function App() {
     setLoading(true);
   
     try {
-      const check = [api || apiUrl];
+      const check = [apiUrl];
       const userResponse = await axios.get(`${check}/attappthree/stuidcheck.php`, {
         params: {
           stuid: data,
@@ -182,7 +165,7 @@ export default function App() {
   };
   
   const fetchStudentDetails = async (barcodeData) => {
-    const check = [api || apiUrl];
+    const check = [apiUrl];
     return new Promise((resolve, reject) => {
       axios.get(`${check}/attappthree/namecheck.php?studentId=${barcodeData}`)
         .then(response => {
@@ -267,7 +250,7 @@ export default function App() {
                   if (manualInput.trim() && /^\d{0,7}-?\d{0,1}$/.test(manualInput)) {
                     // Make the API call
                     try {
-                      const check = [api || apiUrl];
+                      const check = [apiUrl];
                       const response = await axios.get(`${check}/attappthree/namecheck.php`, {
                         params: {
                           studentId: manualInput,

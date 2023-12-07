@@ -3,16 +3,36 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } fro
 import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import * as SecureStore from 'expo-secure-store';
 import { Card, Title } from 'react-native-paper';
 
 const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
   const [eventName, setEventName] = useState('');
   const [eventPrice, setEventPrice] = useState('');
-  const [fname, setfname] = useState("");
+  const [fname, setfname] = useState('');
   const check = apiUrl;
   const navigation = useNavigation();
   console.log("logs", check);
+
+  useEffect(() => {
+    const fetchstoredName = async () => {
+      try {
+        const storedfname = await SecureStore.getItemAsync('fname');
+        if (storedfname) {
+          setfname(storedfname);
+        }
+      } catch (error) {
+        console.error('Error fetching API URL:', error);
+      }
+    };
+
+    fetchstoredName();
+  }, []); 
+  
+  useEffect(() => {
+    console.log(fname);
+  }, [fname]); //
 
   const handleOnChange = (newText) => {
     const sanitizedText = newText.replace(/[\s~`!@#\$%\^&\*\(\)\-+=\[\]\{\}\|\\\'\/\?\:"<>,\.]/g, '');

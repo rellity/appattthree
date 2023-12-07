@@ -35,22 +35,7 @@ const AdminManagementScreen = () => {
     }
   };
 
-  const check = [api || apiUrl];
-
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-  }, []);
+  const check = [apiUrl];
 
   useEffect(() => {
     fetchAdmins();

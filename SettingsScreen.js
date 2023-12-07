@@ -20,7 +20,6 @@ const SettingsScreen = () => {
         const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
         if (storedApiUrl) {
           setApiUrl(storedApiUrl);
-          // Set the protocol checkbox based on the existing API URL
           setUseHttps(storedApiUrl.startsWith('https://'));
         }
       } catch (error) {
