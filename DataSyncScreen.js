@@ -177,6 +177,7 @@ const DataSyncScreen = () => {
         Alert.alert('Error', 'Failed to fetch logs.');
       }
     } catch (error) {
+      setShowLoading(false);
       console.error('Error fetching logs:', error);
       Alert.alert('Error', 'Failed to fetch logs.');
     }
@@ -204,7 +205,7 @@ const DataSyncScreen = () => {
                 }
               } catch (error) {
                 console.error('Error fetching logs:', error);
-                Alert.alert('Error', 'Failed to fetch logs.');
+                Alert.alert('Error', 'Failed to Delete all data.');
               }
             }
           }
