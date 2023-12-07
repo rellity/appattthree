@@ -5,7 +5,6 @@ import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
 import AwesomeAlert from 'react-native-awesome-alerts';
-import * as SecureStore from 'expo-secure-store'
 import PurgeOptionsScreen from './PurgeOptionsScreen';
 import { Title } from 'react-native-paper';
 
@@ -16,45 +15,16 @@ const OptionSelector = () => {
   const [tableData, setTableData] = useState([]);
   const navigation = useNavigation();
   const [showLoading, setShowLoading] = useState(false);
-  const [api, setApiUrl] = useState(null);
   const [selectedLog, setselectedLog] = useState(null);
   const [purgeOptionsModalVisible, setPurgeOptionsModalVisible] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
   const [flag, setFlag] = useState(false);
 
   useEffect(() => {
-    setShowLoading(false);
-    const fetchData = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-          console.log('Stored API:', storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-  
-    fetchData();
+  fetchOptions();
   }, []); 
   
-  useEffect(() => {
-    if (api) {
-      console.log('api:', api);
-      fetchOptions();
-    }
-  }, [api]); 
-  
-  useEffect(() => {
-    if (api) {
-      console.log('api:', api);
-      fetchOptions();
-      
-    }
-  }, [apiUrl]); 
-  
-  const check = [api || apiUrl];
+  const check = [apiUrl];
 
   const formatData = (data) => {
     return data.map((item, index) => (
@@ -107,7 +77,7 @@ const OptionSelector = () => {
       setShowLoading(true);
       
       try {
-        const check = [api || apiUrl];
+        const check = [apiUrl];
         const response = await axios.get(`${check}/attappthree/getOptions.php`);
         const optionsArray = Array.isArray(response.data) ? response.data : [response.data];
         setOptions(response.data);
@@ -138,7 +108,7 @@ const OptionSelector = () => {
   
     try {
       if (itemValue) {
-        const check = api || apiUrl;
+        const check = [apiUrl];
         const responselink = `${check}/attappthree/getOptionsInfo.php`;
   
         const response = await axios.get(responselink, { params: { value: itemValue } });

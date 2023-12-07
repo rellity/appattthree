@@ -5,7 +5,8 @@ import { Alert } from 'react-native';
 const ApiUrlContext = createContext();
 
 const ApiUrlProvider = ({ children }) => {
-  const [apiUrl, setApiUrl] = useState('http://alogger.ccsit.info');
+  const [defaultapiUrl] = useState('http://alogger.ccsit.info');
+  const [apiUrl, setApiUrl] = useState(defaultapiUrl);
 
   const setUrl = async (url) => {
     try {

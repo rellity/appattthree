@@ -23,24 +23,7 @@ function BarcodeGenerator() {
   const [api, setApiUrl] = useState('')
   const [showLoading, setShowLoading] = useState(false);
 
-
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-    console.log({api});
-  }, []);
-
-  const check = [ api || apiUrl ];
+  const check = [ apiUrl ];
   console.log(check);
 
   useEffect(() => {
@@ -55,7 +38,7 @@ function BarcodeGenerator() {
 
   const registerStudent = async () => {
     try {
-      const registerUrl = [api || apiUrl];
+      const registerUrl = [apiUrl];
       const registerCompUrl = `${registerUrl}/attappthree/student_register.php`;
   
       const registerResponse = await axios.get(registerCompUrl, {
@@ -77,7 +60,7 @@ function BarcodeGenerator() {
   
   const generateBarcodeImage = async () => {
     try {
-      const check = [api || apiUrl];
+      const check = [apiUrl];
       const compurl = `${check}/attappthree/barcode.php`;
   
       const response = await axios.get(compurl, {
@@ -175,7 +158,7 @@ function BarcodeGenerator() {
         );
       }
     } catch (error) {
-      console.error(error);
+      Alert.alert('Error',error);
     } finally {
       setShowLoading(false);
     }
@@ -198,10 +181,9 @@ function BarcodeGenerator() {
   };
 
   const handleyschange = (text) => {
-    const sanitizedText = text.replace(/[^1-4a-hA-H]/g, '') // Remove characters that are not 1-4 or A-H
-                              .replace(/([a-h])/, (match, group1) => group1.toUpperCase()); // Capitalize lowercase letters
+    const sanitizedText = text.replace(/[^1-4a-hA-H]/g, '') 
+                              .replace(/([a-h])/, (match, group1) => group1.toUpperCase()); 
   
-    // Ensure the first character is a number between 1-4 and the second character is a letter between A-H (optional)
     if (/^([1-4](?:[A-H])?)?$/.test(sanitizedText)) {
       setys(sanitizedText);
     }
@@ -232,7 +214,7 @@ function BarcodeGenerator() {
         return;
       }
   
-      // Request permission to access media library
+      // permission to access media library
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
         console.error('Permission to access media library is required.');
@@ -241,7 +223,7 @@ function BarcodeGenerator() {
   
       const barcodeFolder = `${FileSystem.documentDirectory}barcode/`;
   
-      // Check if the barcode folder exists, create it if not
+      // check if the barcode folder exists, create it if not
       const folderInfo = await FileSystem.getInfoAsync(barcodeFolder);
       if (!folderInfo.exists) {
         await FileSystem.makeDirectoryAsync(barcodeFolder, { intermediates: true });
@@ -249,20 +231,20 @@ function BarcodeGenerator() {
   
       const barcodePath = `${barcodeFolder}barcode.png`;
   
-      // Check if the file already exists
+      // check if the file already exists
       const assetInfo = await MediaLibrary.getAssetInfoAsync(barcodePath);
       if (assetInfo) {
-        // File exists, delete it before creating a new one
+        // file exists, delete it before creating a new one
         await MediaLibrary.deleteAsync(assetInfo);
       }
   
-      // Save the image to the specified location
+      // save the image to the specified location
       await FileSystem.copyAsync({
         from: imageUri,
         to: barcodePath,
       });
   
-      // Share the saved image
+      // share the saved image
       await Sharing.shareAsync(barcodePath);
   
       

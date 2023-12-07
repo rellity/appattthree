@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     width: '80%',
-    backgroundColor: 'blue',
+    backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 4,
     marginBottom: 20,

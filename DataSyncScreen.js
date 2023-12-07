@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, TouchableOpacity, Alert, Share } from 'react-native';
+import { ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { Button, Card, Title, Paragraph } from 'react-native-paper';
 import * as DocumentPicker from 'expo-document-picker';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import * as WebBrowser from 'expo-web-browser';
 import { FontAwesome } from '@expo/vector-icons';
-import * as SecureStore from 'expo-secure-store';
+import AwesomeAlert from 'react-native-awesome-alerts';
 import { Picker } from '@react-native-picker/picker';
 
 const DataSyncScreen = () => {
@@ -16,23 +16,9 @@ const DataSyncScreen = () => {
   const [api, setApiUrl] = useState('');
   const [selectedOption, setSelectedOption] = useState(null);
   const [options, setOptions] = useState([]);
+  const [showLoading, setShowLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-  }, []);
-
-  const check = [api || apiUrl];
+  const check = [apiUrl];
 
   const handleImport = async () => {
     try {
@@ -57,12 +43,10 @@ const DataSyncScreen = () => {
         },
       });
 
-      // Handle success
       console.log(response.data);
 
       Alert.alert('Import Successful', 'SQL file imported successfully');
     } catch (error) {
-      // Handle error
       console.error('Error importing file:', error);
 
       Alert.alert('Import Failed', 'Error importing SQL file');
@@ -84,7 +68,6 @@ const DataSyncScreen = () => {
   };
 
   const handleExport = () => {
-    // Display a confirmation alert
     Alert.alert(
       'Confirm Export',
       'This will open the browser and download the file.',
@@ -96,7 +79,6 @@ const DataSyncScreen = () => {
         {
           text: 'Export',
           onPress: () => {
-            // User pressed Export, proceed with opening the browser
             const exportUrl = `${check}/attappthree/export_data.php`;
             WebBrowser.openBrowserAsync(exportUrl)
               .then(result => {
@@ -138,7 +120,6 @@ const DataSyncScreen = () => {
       Alert.alert("error", "select a valid option");
       return;
     }
-    // Display a confirmation alert
     Alert.alert(
       'Confirm Export',
       'This will open the browser and download the file.',
@@ -181,11 +162,11 @@ const DataSyncScreen = () => {
   };
 
   const handleViewLogs = async () => {
+    setShowLoading(true);
     try {
       const response = await axios.get(`${check}/attappthree/view_logs.php`);
-
+      setShowLoading(false);
       if (response.data.success) {
-        // Display logs in a scrollable alert
         Alert.alert(
           'View Logs',
           response.data.logs,
@@ -274,7 +255,7 @@ const DataSyncScreen = () => {
       <Card style={{ marginTop: 16 }}>
         <Card.Content>
           <Title>Delete All Events</Title>
-          <Paragraph>Wipe Event Data, reasons may include: new school year, server migration</Paragraph>
+          <Paragraph>Wipe All Event Data</Paragraph>
         </Card.Content>
 
         <Card.Actions>
@@ -321,8 +302,36 @@ const DataSyncScreen = () => {
         </Card.Actions>
       </Card>
       {/* View Logs Card */}
+      <AwesomeAlert
+        show={showLoading}
+        showProgress
+        title="Loading..."
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={false}
+        contentContainerStyle={styles.alertContainer}
+        titleStyle={styles.alertTitle}
+        progressColor="#007AFF" // Customize the progress bar color
+      />
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({ 
+  alertContainer: {
+    borderRadius: 10,
+    backgroundColor: 'white',
+    padding: 20,
+    width: '50%',
+    alignItems: 'center',
+  },
+  alertTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF', 
+    marginBottom: 10,
+  },
+});
 
 export default DataSyncScreen;

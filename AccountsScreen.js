@@ -18,7 +18,6 @@ const AccountsScreen = ({navigation}) => {
   const [showPassword, setShowPassword] = useState(false);
   const { apiUrl } = useApiUrl();
   const [userRole, setUserRole] = useState('');
-  const [api, setApiUrl] = useState('')
   const [funame, setFname] = useState('')
   const [showLoading, setShowLoading] = useState(false);
   const [options, setOptions] = useState([]);
@@ -27,23 +26,7 @@ const AccountsScreen = ({navigation}) => {
   const [isAlertVisible, setAlertVisible] = useState(false);
   let content;
 
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-    console.log({api});
-  }, []);
-
-  const check = [ api || apiUrl ];
+  const check = [ apiUrl ];
 
   const fetchOptions = async () => {
     try {
@@ -219,6 +202,8 @@ const AccountsScreen = ({navigation}) => {
   
             if (rememberPassword) {
               SecureStore.setItemAsync('password', password);
+            } else if (!rememberPassword) { 
+              SecureStore.deleteItemAsync('password');
             }
             SecureStore.setItemAsync('isLoggedIn', 'true');
             SecureStore.setItemAsync('accountName', username);
@@ -237,7 +222,7 @@ const AccountsScreen = ({navigation}) => {
   
             resolve(data);
           } else {
-            reject(new Error(`Login failed: connection timed out`));
+            reject(new Error(`Login failed: wrong username/password`));
           }
         } catch (error) {
           reject(error);
@@ -285,6 +270,10 @@ const AccountsScreen = ({navigation}) => {
         await SecureStore.deleteItemAsync('accountName');
         await SecureStore.deleteItemAsync('accprev');
         setUserRole('');
+        if (!rememberPassword) {
+          await SecureStore.deleteItemAsync('password');
+          setPassword('');
+        }
       } else {
         throw new Error(`Logout failed: ${logoutData.message}`);
       }
@@ -383,7 +372,6 @@ const AccountsScreen = ({navigation}) => {
       )}
       {isLoggedIn ? (
         <View style={styles.loggedInContainer}>
-          <Text style={styles.welcomeText}>Welcome, {accountName}!</Text>
           <TouchableOpacity style={styles.loginButton2} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
@@ -598,7 +586,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   loginButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',
@@ -609,7 +597,7 @@ const styles = StyleSheet.create({
   },
   
   loginButton1: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 5,
     borderTopLeftRadius: 0,
@@ -618,7 +606,7 @@ const styles = StyleSheet.create({
   },
   loginButton2: {
     width: '100%',
-    backgroundColor: '#3498db',
+    backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 5,
     borderBottomLeftRadius: 0,
@@ -663,7 +651,7 @@ const styles = StyleSheet.create({
     width: '80%',
     marginTop: 10,
     padding: 10,
-    backgroundColor: 'blue', // Adjust the color as needed
+    backgroundColor: '#007bff', // Adjust the color as needed
     borderRadius: 4,
   },
   closeButtonText: {
@@ -707,7 +695,7 @@ const styles = StyleSheet.create({
 
   loginButton55: {
     position: 'absolute',
-    backgroundColor: '#3498db',
+    backgroundColor: '#007bff',
     width: '99%',
     padding: 15,
     borderRadius: 5,

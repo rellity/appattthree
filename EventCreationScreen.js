@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { useApiUrl } from './ApiUrlContext';
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
 import { useNavigation } from '@react-navigation/native';
 import { Card, Title } from 'react-native-paper';
 
@@ -10,32 +9,10 @@ const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
   const [eventName, setEventName] = useState('');
   const [eventPrice, setEventPrice] = useState('');
-  const [api, setApiUrl] = useState("");
   const [fname, setfname] = useState("");
-  const check = api || apiUrl;
+  const check = apiUrl;
   const navigation = useNavigation();
   console.log("logs", check);
-
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-
-        const storedfname = await SecureStore.getItemAsync('fname');
-        if (storedfname) {
-          setfname(storedfname);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-    console.log({ api });
-  }, []);
 
   const handleOnChange = (newText) => {
     const sanitizedText = newText.replace(/[\s~`!@#\$%\^&\*\(\)\-+=\[\]\{\}\|\\\'\/\?\:"<>,\.]/g, '');
@@ -48,7 +25,29 @@ const EventCreationScreen = () => {
   }
 
   const createEvent = async () => {
+    if (eventPrice === "0") {
+      Alert.alert('Error', 'Fine value cannot be 0.');
+      return;
+    }
+
+    if (!eventPrice) {
+      Alert.alert('Error', 'Fine value cannot be blank.');
+      return;
+    }
+
+    if (!eventName) {
+      Alert.alert('Error', 'Event Name cannot be blank.');
+      return;
+    }
     try {
+      const checkDuplicateUrl = `${check}/attappthree/event_check_name.php?eventName=${eventName}`;
+      const duplicateCheckResponse = await axios.get(checkDuplicateUrl);
+
+      if (duplicateCheckResponse.data.duplicate) {
+        Alert.alert('Error', `${eventName} already exists.\nPlease choose a different name.`);
+        return;
+      }
+
       const compurl = `${check}/attappthree/create_event.php`;
       const response = await axios.post(compurl, {
         name: eventName,
@@ -80,7 +79,7 @@ const EventCreationScreen = () => {
       }
     } catch (error) {
       // Handle errors here
-      console.error('Error creating event:', error.message);
+      Alert.alert('Error', error.message);
     }
   };
 
