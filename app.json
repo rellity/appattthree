@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "attappthree",
-    "slug": "attappthree",
-    "version": "1.0.0",
+    "name": "ICTS Logger",
+    "slug": "ictslogger",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

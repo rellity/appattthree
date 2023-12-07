@@ -82,7 +82,7 @@ const SettingsScreen = () => {
     }
   };
 
-  const handleResetStack = (valuef) => {
+  const handleResetStack = () => {
     resetNavigationStack();
 
     navigation.reset({
