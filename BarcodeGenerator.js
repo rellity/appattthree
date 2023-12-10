@@ -301,7 +301,7 @@ function BarcodeGenerator() {
         isVisible={isBarcodeDialogVisible}
         onBackdropPress={closeBarcodeDialog}
       >
-        <Dialog.Title title="Successfuly Registered" />
+        <Dialog.Title title="Registration Data" />
         {barcodeData && (
           <View style={styles.barcodeContainer}>
             <Image

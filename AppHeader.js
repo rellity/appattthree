@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { HeaderButtons, Item } from 'react-navigation-header-buttons';
 import IoniconsHeaderButton from './IoniconsHeaderButton';
-import { View, Text, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ToastAndroid } from 'react-native';
 
 const DropdownMenu = ({ menuItems, onSelect, isOpen, onClose }) => {
 
@@ -81,10 +80,11 @@ const AppHeader = () => {
     if (item === 'account') {
       navigation.navigate('AccountsScreen');
     } else if (item === 'about') {
-      ToastAndroid.show("there is no about us, kay way kami 😂😂😂",ToastAndroid.LONG)
-      ToastAndroid.show('wa bitaw', ToastAndroid.LONG)
-      ToastAndroid.show('nadaot man gud', ToastAndroid.LONG)
-      ToastAndroid.show('mao nang way about us😂😂😂', ToastAndroid.LONG)
+      Alert.alert(
+        'About Us: ICTS Logger',
+        'Welcome to ICTS logger. Our barcode scanner application is the creation of a passionate team\nof students dedicated to offer alternatives to your attendance checking predicament. Free and easily accessible.\n\nICTS logger, it emerged from a university project led by visionary students and has grown into a user-friendly barcode scanning app. Our journey is defined by constant learning, collaboration, and a dedication to excellence.\n\nKey Features:\n- User registration\n- Barcode generation and student registration\n- Swift student identification through scanning\n- Attendance tracking\n- Streamlined student management\n- Organized officer management',
+        [{ text: 'OK' }]
+      );
     }
   };
 

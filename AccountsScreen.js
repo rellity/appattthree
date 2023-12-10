@@ -83,11 +83,11 @@ const AccountsScreen = ({navigation}) => {
     case 'superadm':
       content = (
         <View style={styles.loginContainer2}>
-          <Card.Title title="Super Administrator" />
+          <Card.Title title="Chief Administrator" />
           <Card.Content>
-              <Text>You are a superadmin,{'\n'}{funame}</Text>
+              <Text>You are the chief admin,{'\n'}{funame}</Text>
 
-              <Text> • You have the same previleges as an offier</Text>
+              <Text> • You have the same privileges as an officer</Text>
               <Text> • You have an extended access to the data directly</Text>
               <Text> • You can manage officer accounts</Text>
               <Card.Actions>
