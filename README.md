@@ -1,7 +1,8 @@
 # appattthree
-appattthree
 
 ~~kapoy himo read me basta i follow ra ag intruction hahahahhahaha~~
+~~arang ka hugaw ag working tree wa nahu na organize atay~~
+
 
 ok, unsaon pag install :
 
