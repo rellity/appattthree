@@ -7,8 +7,8 @@ import axios from 'axios';
 const MainPage = ({ route,navigation }) => {
   const { apiUrl } = useApiUrl();
   const updatedApiUrl = route.params ? route.params.updatedApiUrl : null;
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [accountName, setAccountName] = useState('');
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [accountName, setAccountName] = useState('');
   
   useEffect(() => {
     SecureStore.getItemAsync('isLoggedIn')

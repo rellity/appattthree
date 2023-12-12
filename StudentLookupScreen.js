@@ -2,7 +2,6 @@ import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
-import * as SecureStore from 'expo-secure-store'
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 const StudentLookupScreen = () => {
@@ -11,36 +10,19 @@ const StudentLookupScreen = () => {
   const [eventData, setEventData] = useState(null);
   const [fineData, setFineData] = useState(null);
   const { apiUrl } = useApiUrl();
-  const [api, setApiUrl] = useState('')
   const [showLoading, setShowLoading] = useState(false);
-  
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
 
-    fetchApiUrl();
-  }, []);
-
-  const check = [api || apiUrl];
-  console.log(check);
-
+  const check = [apiUrl];
 
   const handleLookup = async () => {
-    setShowLoading(true);
+
     if (idNumber.trim() === '') {
       Alert.alert('Please enter an ID number.');
       return;
     }
     
     try {
+      setShowLoading(true);
       const compurl = `${check}/attappthree/student_lookup.php`;
   
       const response = await axios.get(compurl, {
@@ -50,7 +32,6 @@ const StudentLookupScreen = () => {
       });
   
       if (response.data && response.data.error) {
-        // Check if the response contains an error property
         Alert.alert('Student not found.');
       } else if (response.data) {
         setStudentData(response.data);

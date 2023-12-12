@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid} from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useRoute } from '@react-navigation/native';
 import axios from 'axios';
@@ -7,7 +7,7 @@ import { useApiUrl } from './ApiUrlContext';
 import { Camera } from 'expo-camera';
 import Modal from 'react-native-modal';
 import { useNavigation } from '@react-navigation/native';
-import * as SecureStore from 'expo-secure-store';
+import { KeyboardAvoidingView } from 'react-native';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
@@ -25,23 +25,6 @@ export default function App() {
   const navigation = useNavigation();
   const [api, setApiUrl] = useState('');
   const [flashMode, setFlashMode] = useState(false);
-
-
-
-  useEffect(() => {
-    const fetchApiUrl = async () => {
-      try {
-        const storedApiUrl = await SecureStore.getItemAsync('apiUrl');
-        if (storedApiUrl) {
-          setApiUrl(storedApiUrl);
-        }
-      } catch (error) {
-        console.error('Error fetching API URL:', error);
-      }
-    };
-
-    fetchApiUrl();
-  }, []);
 
 
   useEffect(() => {
@@ -65,7 +48,7 @@ export default function App() {
     setLoading(true);
   
     try {
-      const check = [api || apiUrl];
+      const check = [apiUrl];
       const userResponse = await axios.get(`${check}/attappthree/stuidcheck.php`, {
         params: {
           stuid: data,
@@ -182,7 +165,7 @@ export default function App() {
   };
   
   const fetchStudentDetails = async (barcodeData) => {
-    const check = [api || apiUrl];
+    const check = [apiUrl];
     return new Promise((resolve, reject) => {
       axios.get(`${check}/attappthree/namecheck.php?studentId=${barcodeData}`)
         .then(response => {
@@ -228,7 +211,7 @@ export default function App() {
   
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container}>
       <View style={styles.cameraContainer}>
         {renderCamera()}
         <View style={styles.highlightContainer}>
@@ -267,7 +250,7 @@ export default function App() {
                   if (manualInput.trim() && /^\d{0,7}-?\d{0,1}$/.test(manualInput)) {
                     // Make the API call
                     try {
-                      const check = [api || apiUrl];
+                      const check = [apiUrl];
                       const response = await axios.get(`${check}/attappthree/namecheck.php`, {
                         params: {
                           studentId: manualInput,
@@ -334,7 +317,7 @@ export default function App() {
         progressColor="#007AFF" 
       />
     </View>
-    </View>
+    </KeyboardAvoidingView>
   );
   
 }
