@@ -2,7 +2,6 @@ import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
-import * as SecureStore from 'expo-secure-store'
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 const StudentLookupScreen = () => {
@@ -16,13 +15,14 @@ const StudentLookupScreen = () => {
   const check = [apiUrl];
 
   const handleLookup = async () => {
-    setShowLoading(true);
+
     if (idNumber.trim() === '') {
       Alert.alert('Please enter an ID number.');
       return;
     }
     
     try {
+      setShowLoading(true);
       const compurl = `${check}/attappthree/student_lookup.php`;
   
       const response = await axios.get(compurl, {

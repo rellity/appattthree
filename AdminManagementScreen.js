@@ -134,17 +134,17 @@ const AdminManagementScreen = () => {
     <View style={styles.adminItemContainer}>
       <View style={styles.adminItemContent}>
         <View style={styles.adminItemRow}>
-          <Text style={styles.adminItemLabel}>username:</Text>
+          <Text style={styles.adminItemLabel}>Username:</Text>
           <Text style={styles.adminItemValue}>{item.uname}</Text>
         </View>
         <View style={styles.adminItemRow}>
-          <Text style={styles.adminItemLabel}>password:</Text>
+          <Text style={styles.adminItemLabel}>Password:</Text>
           <Text style={styles.adminItemValue}>
             {selectedAdmin && selectedAdmin.id === item.id && !maskModalPassword ? item.pass : '*'.repeat(item.pass.length)}
           </Text>
         </View>
         <View style={styles.adminItemRow}>
-          <Text style={styles.adminItemLabel}>fullname:</Text>
+          <Text style={styles.adminItemLabel}>Fullname:</Text>
           <Text style={styles.adminItemValue}>{item.fname}</Text>
         </View>
       </View>

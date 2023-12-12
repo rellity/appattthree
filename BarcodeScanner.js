@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid, } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, ToastAndroid} from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { useRoute } from '@react-navigation/native';
 import axios from 'axios';
@@ -7,7 +7,7 @@ import { useApiUrl } from './ApiUrlContext';
 import { Camera } from 'expo-camera';
 import Modal from 'react-native-modal';
 import { useNavigation } from '@react-navigation/native';
-import * as SecureStore from 'expo-secure-store';
+import { KeyboardAvoidingView } from 'react-native';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
@@ -211,7 +211,7 @@ export default function App() {
   
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.container}>
       <View style={styles.cameraContainer}>
         {renderCamera()}
         <View style={styles.highlightContainer}>
@@ -317,7 +317,7 @@ export default function App() {
         progressColor="#007AFF" 
       />
     </View>
-    </View>
+    </KeyboardAvoidingView>
   );
   
 }

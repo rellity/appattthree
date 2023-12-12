@@ -158,7 +158,7 @@ const OptionSelector = () => {
         );
         console.log(respond.data);
         console.log("1;",selectedOption);
-        ToastAndroid.show('Table Data Destroyed into utter nothingness, in the darkness of the night, we the people of the shadows', ToastAndroid.LONG);
+        ToastAndroid.show('Table Data Cleared!', ToastAndroid.LONG);
       }
 
       if (selectedMode === 'clearLoginData') {
@@ -177,7 +177,7 @@ const OptionSelector = () => {
         );
         console.log("clearlogin response: ", respond.data);
         console.log("1;",selectedOption);
-        ToastAndroid.show('Login Data Cleared, +1 clarity', ToastAndroid.SHORT);
+        ToastAndroid.show('Login Data Cleared!', ToastAndroid.SHORT);
       }
 
       if (selectedMode === 'clearLogoutData') {
@@ -196,7 +196,7 @@ const OptionSelector = () => {
         );
         console.log("clearlogin response: ", respond.data);
         console.log("1;",selectedOption);
-        ToastAndroid.show('Logout Data Cleared, +1 darkness', ToastAndroid.SHORT);
+        ToastAndroid.show('Logout Data Cleared!', ToastAndroid.SHORT);
       }
 
       if (selectedMode === 'deleteEventEntry') {
@@ -215,7 +215,7 @@ const OptionSelector = () => {
         );
         console.log("clearlogin response: ", respond.data);
         console.log("1;",selectedOption);
-        ToastAndroid.show(`Event Entry Deleted: ${selectedOption}, life is short delete an event.`, ToastAndroid.SHORT);
+        ToastAndroid.show(`Event Entry Deleted: ${selectedOption}!`, ToastAndroid.SHORT);
       }
 
       if (selectedMode === 'endLogin') {
@@ -234,7 +234,7 @@ const OptionSelector = () => {
         );
         console.log("clearlogin response: ", respond.data);
         console.log("1;",selectedOption);
-        ToastAndroid.show(`Login Ended: ${selectedOption}, we are soooo back!!!`, ToastAndroid.SHORT);
+        ToastAndroid.show(`Login Ended: ${selectedOption}!`, ToastAndroid.SHORT);
       }
 
       if (selectedMode === 'endLogout') {
@@ -253,7 +253,7 @@ const OptionSelector = () => {
         );
         console.log("clearlogin response: ", respond.data);
         console.log("1;",selectedOption);
-        ToastAndroid.show(`Logout Ended: ${selectedOption}, we are done, i dont care, quit ur bs`, ToastAndroid.SHORT);
+        ToastAndroid.show(`Logout Ended: ${selectedOption}!`, ToastAndroid.SHORT);
       }
 
       // Close the modal after completing the purge actions

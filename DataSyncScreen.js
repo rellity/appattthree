@@ -185,8 +185,8 @@ const DataSyncScreen = () => {
 
   const handleDropdata = async () => {
     Alert.alert(
-        'Confirm Export',
-        'This will open the browser and download the file.', 
+        'Wipe Data?',
+        'This action will wipe all event and student data.', 
         [
           {
             text: 'Cancel',
