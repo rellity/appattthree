@@ -91,29 +91,29 @@ const SettingsScreen = () => {
   };
   
 
-  const handleTestApi = async () => {
-    setShowLoading(true);
-    try {
-      const response = await axios.get(`${apiUrl}/test_api.php`);
+  // const handleTestApi = async () => {
+  //   setShowLoading(true);
+  //   try {
+  //     const response = await axios.get(`${apiUrl}/test_api.php`);
   
-      if (response.data) {
-        setApiResponse('api call success');
-        setShowLoading(false);
-        ToastAndroid.showWithGravityAndOffset(`api call success`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
-      } else if (response.data == null) {
-          setShowLoading(false);
-          ToastAndroid.showWithGravityAndOffset(`press again`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
-      } else {
-        setApiResponse('server call failed');
-        setShowLoading(false);
-      }
+  //     if (response.data) {
+  //       setApiResponse('api call success');
+  //       setShowLoading(false);
+  //       ToastAndroid.showWithGravityAndOffset(`api call success`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
+  //     } else if (response.data == null) {
+  //         setShowLoading(false);
+  //         ToastAndroid.showWithGravityAndOffset(`press again`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
+  //     } else {
+  //       setApiResponse('server call failed');
+  //       setShowLoading(false);
+  //     }
 
-    } catch (error) {
-      console.error('error:', error);
-      ToastAndroid.showWithGravityAndOffset(`server call failed`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
-      setShowLoading(false);
-    }
-  };
+  //   } catch (error) {
+  //     console.error('error:', error);
+  //     ToastAndroid.showWithGravityAndOffset(`server call failed`, ToastAndroid.BOTTOM, ToastAndroid.LONG, 25, 50);
+  //     setShowLoading(false);
+  //   }
+  // };
   
   
 
@@ -137,13 +137,13 @@ const SettingsScreen = () => {
             textStyle={styles.checkboxText}
           />
         </View>
-        <TouchableHighlight
+        {/* <TouchableHighlight
           style={styles.saveButton}
           underlayColor="#2980b9"
           onPress={handleTestApi}
         >
           <Text style={{ color: 'white', fontSize: 16 }}>Test Server</Text>
-        </TouchableHighlight>
+        </TouchableHighlight> */}
 
         <TouchableHighlight
           style={styles.saveButton}

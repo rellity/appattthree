@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlign: 'center',
     fontSize: 12,
-  },
+  }, 
 });
 
 export default MainPage;

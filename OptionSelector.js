@@ -18,7 +18,11 @@ const OptionSelector = () => {
   const [selectedLog, setselectedLog] = useState(null);
   const [purgeOptionsModalVisible, setPurgeOptionsModalVisible] = useState(false);
   const [selectedMode, setSelectedMode] = useState(null);
-  const [flag, setFlag] = useState(false);
+  const [flag, setFlag] = useState(false)
+  const showPicker =
+  tableData.length > 0 &&
+  tableData.some((event) => event.haslogin === 1 || event.haslogout === 1);
+  
 
   useEffect(() => {
   fetchOptions();
@@ -33,14 +37,22 @@ const OptionSelector = () => {
         <Text style={styles.value}>{formatDateToGMT8(item.createdon)}</Text>
         <Text style={styles.label}>Created by:</Text>
         <Text style={styles.value}>{item.createdby}</Text>
+        {item.loginstatus.toLowerCase() !== 'none' && (
+        <>
         <Text style={styles.label}>Login Status:</Text>
         <Text style={[styles.value, item.loginstatus.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
           {item.loginstatus}
         </Text>
+        </>
+        )}
+        {item.logoutstatus.toLowerCase() !== 'none' && (
+        <>
         <Text style={styles.label}>Logout Status:</Text>
         <Text style={[styles.value, item.logoutstatus.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
           {item.logoutstatus}
         </Text>
+        </>
+        )}
         {item.status.toLowerCase() === 'ended' && (
           <>
             <Text style={styles.label}>Event Status:</Text>
@@ -50,6 +62,10 @@ const OptionSelector = () => {
             <Text style={styles.label}>Ended on:</Text>
             <Text style={styles.endedText}>{formatDateToGMT8(item.endedby)}</Text>
           </>
+        )}
+        {item.status.toLowerCase() === 'none' && (
+          <>
+           </>
         )}
       </View>
     ));
@@ -63,7 +79,7 @@ const OptionSelector = () => {
       hour: 'numeric',
       minute: 'numeric',
       hour12: true,
-      timeZone: 'Asia/Singapore', // GMT+8
+      timeZone: 'Asia/Singapore', 
     };
   
     const gmt8Date = new Date(dateString);
@@ -101,6 +117,19 @@ const OptionSelector = () => {
     // mannnnnnnn, promise2 atay alas 11:44 sa gabii wa koy gibuthat kundi mag program ani
   };
 
+  useEffect(() => {
+    console.log('Options:', options);
+  }, [options]);
+  
+  useEffect(() => {
+    console.log('TableData:', tableData);
+  }, [tableData]);
+  
+  useEffect(() => {
+    console.log('ShowPicker:', showPicker);
+  }, [options, selectedOption, tableData]);
+  
+
   const handleOptionChange = async (itemValue) => {
     setSelectedOption(itemValue);
   
@@ -121,6 +150,7 @@ const OptionSelector = () => {
           // Check if the data array is not empty before setting it
           if (Array.isArray(response.data) && response.data.length > 0) {
             setTableData(response.data);
+            
           } else {
             setTableData([]);
           }
@@ -134,6 +164,7 @@ const OptionSelector = () => {
     } catch (error) {
       Alert.alert('Error fetching data for the selected table:', error);
     }
+    
   };
 
   const handlePurgeOptions = async (selectedMode) => {
@@ -160,8 +191,12 @@ const OptionSelector = () => {
         console.log("1;",selectedOption);
         ToastAndroid.show('Table Data Cleared!', ToastAndroid.LONG);
       }
-
+      
       if (selectedMode === 'clearLoginData') {
+        if (tableData[0].loginstatus.trim().toLowerCase() === 'none'){
+          Alert.alert('Error', 'This Event has no Login!')
+          return;
+        }
         respond = await axios.get(`${check}/attappthree/truncateevent.php`, { params: { table: selectedOption, column: 'login' } });
         Alert.alert(
           "Cleared",
@@ -181,6 +216,10 @@ const OptionSelector = () => {
       }
 
       if (selectedMode === 'clearLogoutData') {
+        if (tableData[0].logoutstatus.trim().toLowerCase() === 'none'){
+          Alert.alert('Error', 'This Event has no Logout!')
+          return;
+        }
         respond = await axios.get(`${check}/attappthree/truncateevent.php`, { params: { table: selectedOption, column: 'logout' } });
         Alert.alert(
           "Cleared",
@@ -219,6 +258,10 @@ const OptionSelector = () => {
       }
 
       if (selectedMode === 'endLogin') {
+        if (tableData[0].loginstatus.trim().toLowerCase() === 'none'){
+          Alert.alert('Error', 'This Event has no Login!')
+          return;
+        }
         respond = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: selectedOption, column: 'login' } });
         Alert.alert(
           "Ended",
@@ -238,6 +281,10 @@ const OptionSelector = () => {
       }
 
       if (selectedMode === 'endLogout') {
+        if (tableData[0].logoutstatus.trim().toLowerCase() === 'none'){
+          Alert.alert('Error', 'This Event has no Logout!')
+          return;
+        }
         respond = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: selectedOption, column: 'logout' } });
         Alert.alert(
           "Ended",
@@ -301,15 +348,23 @@ const OptionSelector = () => {
           )
         ))}
       </Picker>
-      <Picker
-        selectedValue={selectedLog}
-        onValueChange={(itemValue) => setselectedLog(itemValue)}
-        style={styles.picker}
-      >
-        <Picker.Item label="Select either Login or Logout" value={null} />
-        <Picker.Item label="Log Login" value="login" />
-        <Picker.Item label="Log Logout" value="logout" />
-      </Picker>
+      {tableData && Array.isArray(tableData) && tableData.length > 0 && (
+        <Picker
+          selectedValue={selectedLog}
+          onValueChange={(itemValue) => setselectedLog(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select either Login or Logout" value={null} />
+
+          {tableData[0].haslogin === 1 && (
+            <Picker.Item label="Log Login" value="login" />
+          )}
+
+          {tableData[0].haslogout === 1 && (
+            <Picker.Item label="Log Logout" value="logout" />
+          )}
+        </Picker>
+      )}
       <View style={styles.scontainer}>
         <TouchableOpacity
           style={styles.sbutton}
@@ -323,13 +378,21 @@ const OptionSelector = () => {
                 let isEnded = false;
                 
                 if (selectedLog === 'login') {
+                  if (selectedEvent.loginstatus.toLowerCase() === 'ended') {
                   isEnded = selectedEvent.loginstatus.toLowerCase() === 'ended';
+                  }
+                  if (selectedEvent.loginstatus.toLowerCase() === 'none') {
+                  Alert.alert('Error', 'Where did you even go wring from here?');
+                  return;
+                  }
                 } else if (selectedLog === 'logout') {
                   if (selectedEvent.loginstatus.toLowerCase() === 'ended') {
                   isEnded = selectedEvent.logoutstatus.toLowerCase() === 'ended';
+                  } else if (selectedEvent.logoutstatus.toLowerCase() === 'ongoing' && selectedEvent.loginstatus.toLowerCase() === 'none') {
+                    ToastAndroid.show(`${selectedOption} logout`, ToastAndroid.SHORT);
                   } else {
-                    Alert.alert("Error", `Login in ${selectedOption} is still ongoing`);
-                  return;
+                    Alert.alert('Login not Done',`${selectedOption} login is still ongoing!`);
+                    return;
                   }
                 } else {
                   Alert.alert("Error", "Please select a Log Operation.");

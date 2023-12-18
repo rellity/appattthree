@@ -13,7 +13,6 @@ const DataSyncScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileName, setSelectedFileName] = useState(null);
   const { apiUrl } = useApiUrl();
-  const [api, setApiUrl] = useState('');
   const [selectedOption, setSelectedOption] = useState(null);
   const [options, setOptions] = useState([]);
   const [showLoading, setShowLoading] = useState(false);
@@ -25,6 +24,23 @@ const DataSyncScreen = () => {
       if (!selectedFile) {
         Alert.alert('No File Selected', 'Please select an SQL file');
         return;
+      }
+
+      try {
+        setShowLoading(true);
+        const compurl = `${check}/attappthree/dbmt.php`;
+        const response = await axios.get(compurl);
+        console.log('table', response.data);
+        if (response.data.success === false) {
+            setShowLoading(false);
+            Alert.alert('Database is dirty!', 'Drop all data first and do not initialize.');
+            return;
+        } 
+      } catch (error) {
+          console.error('Error checking database status:', error);
+          setShowLoading(false);
+            Alert.alert('Error', 'Failed to check database status');
+            return;
       }
 
       const formData = new FormData();
@@ -42,7 +58,7 @@ const DataSyncScreen = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+      setShowLoading(false);
       console.log(response.data);
 
       Alert.alert('Import Successful', 'SQL file imported successfully');
@@ -98,13 +114,6 @@ const DataSyncScreen = () => {
   };
 
   useEffect(() => {
-    if (api) {
-      console.log('api:', api);
-      fetchOptions();
-    }
-  }, [api]);
-
-  useEffect(() => {
     if (apiUrl) {
       console.log('api:', apiUrl);
       fetchOptions();
@@ -152,6 +161,7 @@ const DataSyncScreen = () => {
   };
 
   const fetchOptions = async () => {
+    setShowLoading(true);
     try {
       const response = await axios.get(`${check}/attappthree/getOptions.php`);
       setOptions(response.data);
@@ -159,6 +169,7 @@ const DataSyncScreen = () => {
       console.error('Error fetching options:', error);
       Alert.alert('Error', 'Error fetching options');
     }
+    setShowLoading(false);
   };
 
   const handleViewLogs = async () => {
@@ -196,14 +207,39 @@ const DataSyncScreen = () => {
             text: 'Confirm',
             onPress: async () => {
               try {
+                setShowLoading(true);
                 const response = await axios.get(`${check}/attappthree/dropall.php`);
                 console.log(response.data)
                 if (response.data) {
-                  Alert.alert('Event Data Wiped',`Data Wiped Successfuly!`);
+                  setShowLoading(false);
+                  Alert.alert('Event Data Wiped',
+                  `Data Wiped Successfuly!`,
+                  [
+                    {
+                      text: 'OK',
+                      onPress: () => Alert.alert(
+                        'Database Dropped',
+                        `Initialize Database?\n*if you are intending to start new, press yes\n**if you want to import old data skip this step`,
+                        [
+                          {
+                            text: 'Cancel',
+                            style: 'cancel',
+                          },
+                          {
+                            text: 'Yes',
+                            onPress: () => initializeDatabase(),
+                          },
+                        ],
+                        { cancelable: false }
+                      ),
+                    },
+                  ]);
+                  
                 } else {
                   Alert.alert('Error', 'Something Went Wrong, Please Try Again.');
                 }
               } catch (error) {
+                setShowLoading(false);
                 console.error('Error fetching logs:', error);
                 Alert.alert('Error', 'Failed to Delete all data.');
               }
@@ -211,6 +247,25 @@ const DataSyncScreen = () => {
           }
         ]
       );
+  };
+
+  const initializeDatabase = async () => {
+    try {
+      setShowLoading(true);
+      const response = await axios.get(`${check}/attappthree/initone.php`);
+
+      if (response.data.success) {
+        setShowLoading(false);
+        Alert.alert('Success', 'Database initialized successfully');
+      } else {
+        setShowLoading(false);
+        Alert.alert('Error', 'Failed to initialize database');
+      }
+    } catch (error) {
+      setShowLoading(false);
+      console.error('Error:', error);
+      Alert.alert('Error', 'Something went wrong');
+    }
   };
 
   return (
@@ -313,7 +368,7 @@ const DataSyncScreen = () => {
         showConfirmButton={false}
         contentContainerStyle={styles.alertContainer}
         titleStyle={styles.alertTitle}
-        progressColor="#007AFF" // Customize the progress bar color
+        progressColor="#007AFF" 
       />
     </ScrollView>
   );

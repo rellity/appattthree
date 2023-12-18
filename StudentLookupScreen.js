@@ -59,8 +59,8 @@ const StudentLookupScreen = () => {
               });
   
               if (fineResponse.data) {
-                setFineData(fineResponse.data);
-                console.log('Fine Response:', fineResponse.data);
+                setFineData(fineResponse.data.total_fine);
+                console.log('Fine Response:', fineResponse.data.total_fine);
               } else {
                 Alert.alert('No fine data found.');
               }
@@ -103,7 +103,7 @@ const StudentLookupScreen = () => {
       </TouchableOpacity>
       {studentData || eventData || fineData ? (
         <View style={styles.scrollableCard}>
-            <ScrollView style={{ flexGrow: 1 }}>
+            
               
             {!studentData && !eventData && !fineData && (
               <View style={styles.invalidIdContainer}>
@@ -119,35 +119,41 @@ const StudentLookupScreen = () => {
                 </View>
               )}
 
+              {fineData !== null && fineData !== undefined ? (
+                  <View style={styles.studentInfoContainer}>
+                      <Text>Total Fine: ₱{fineData}</Text>
+                  </View>
+              ) : (
+                  <View style={styles.studentInfoContainer}>
+                      <Text>Total Fine: ₱0</Text>
+                  </View>
+              )}
+              
+              <ScrollView style={{ flexGrow: 1 }}>
               {eventData && (
-                <View style={styles.eventDataContainer}>
-                  {
-                    Object.keys(eventData).map((eventKey) => {
-                      const eventDataValue = eventData[eventKey];
-                      return (
-                        <View key={eventKey} style={{ alignItems: 'center' }}>
-                          <Text style={styles.eventKey}>{eventKey} : </Text>
-                          {
-                            Object.keys(eventDataValue).map((key) => (
-                              <Text key={`${eventKey}-${key}`}>
-                                {key}: {eventDataValue[key] ? 'Present' : 'Absent'}
-                              </Text>
-                            ))
-                          }
-                          <View style={styles.divider} />
-                        </View>
-                      );
-                    })
-                  }
-                </View>
-              )}
-
-              {fineData && (
-                <View style={styles.studentInfoContainer}>
-                  <Text>Total Fines  :  ₱{fineData.total_fine}</Text>
-                  <View style={styles.divider} />
-                </View>
-              )}
+                    <View style={styles.eventDataContainer}>
+                        {eventData.error ? (
+                            <View style={{ alignItems: 'center' }}>
+                                <Text style={styles.errorText}>{eventData.error}</Text>
+                            </View>
+                        ) : (
+                            Object.keys(eventData).map((eventKey) => {
+                                const eventDataValue = eventData[eventKey];
+                                return (
+                                    <View key={eventKey} style={{ alignItems: 'center' }}>
+                                        <Text style={styles.eventKey}>{eventKey} : </Text>
+                                        {Object.keys(eventDataValue).map((key) => (
+                                            <Text key={`${eventKey}-${key}`}>
+                                                {key}: {eventDataValue[key] ? 'Present' : 'Absent'}
+                                            </Text>
+                                        ))}
+                                        <View style={styles.divider} />
+                                    </View>
+                                );
+                            })
+                        )}
+                    </View>
+                )}
             </ScrollView>
           </View>
           ) : null}

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Card, Title } from 'react-native-paper';
+import Checkbox from 'expo-checkbox';
 
 const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
@@ -14,6 +15,9 @@ const EventCreationScreen = () => {
   const check = apiUrl;
   const navigation = useNavigation();
   console.log("logs", check);
+  const [isCheckedIN, setCheckedIN] = useState(true);
+  const [isCheckedOUT, setCheckedOUT] = useState(true);
+
 
   useEffect(() => {
     const fetchstoredName = async () => {
@@ -33,6 +37,9 @@ const EventCreationScreen = () => {
   useEffect(() => {
     console.log(fname);
   }, [fname]); //
+
+  console.log(isCheckedIN);
+  console.log(isCheckedOUT);
 
   const handleOnChange = (newText) => {
     const sanitizedText = newText.replace(/[\s~`!@#\$%\^&\*\(\)\-+=\[\]\{\}\|\\\'\/\?\:"<>,\.]/g, '');
@@ -59,6 +66,12 @@ const EventCreationScreen = () => {
       Alert.alert('Error', 'Event Name cannot be blank.');
       return;
     }
+
+    if(!isCheckedIN && !isCheckedOUT){
+      Alert.alert('Error', 'Select at least 1 log method.');
+      return;
+    }
+    
     try {
       const checkDuplicateUrl = `${check}/attappthree/event_check_name.php?eventName=${eventName}`;
       const duplicateCheckResponse = await axios.get(checkDuplicateUrl);
@@ -72,7 +85,9 @@ const EventCreationScreen = () => {
       const response = await axios.post(compurl, {
         name: eventName,
         createdby: fname,
-        price: eventPrice
+        price: eventPrice, 
+        haslogin: +isCheckedIN,
+        haslogout: +isCheckedOUT,
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -137,6 +152,23 @@ const EventCreationScreen = () => {
             placeholder="Fine Price (per entry)"
           />
           
+          <View style={styles.section}>  
+          <Checkbox
+            style={styles.checkbox}
+            value={isCheckedIN}
+            onValueChange={setCheckedIN}
+            color={isCheckedIN ? '#4630EB' : undefined}
+          />
+          <Text style={styles.paragraph}>Login   </Text>
+          
+          <Checkbox
+            style={styles.checkbox}
+            value={isCheckedOUT}
+            onValueChange={setCheckedOUT}
+            color={isCheckedOUT ? '#4630EB' : undefined}
+          />
+          <Text style={styles.paragraph}>Logout</Text>
+          </View>
         </Card.Content>
       </Card>
       <TouchableOpacity style={styles.button} onPress={createEvent}>
@@ -189,6 +221,17 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200, 
     marginBottom: 30,
+  },
+  section: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  paragraph: {
+    fontSize: 15,
+  },
+  checkbox: {
+    margin: 8,
   },
 });
 
