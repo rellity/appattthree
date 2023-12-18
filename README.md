@@ -15,7 +15,6 @@ sunod is i change directory nimo ag terminal nimo
 \
 kung cmd o powershell ```cd appattthree```
 \
-kung bash ```cd ..```
 
 sunod i run ```npm install```
 then huwati kadali or dugay depende sa speed sa internet nimo,
