@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import * as SecureStore from 'expo-secure-store';
 
 const PurgeOptionsScreen = ({ visible, onClose, onPurge }) => {
   const [selectedOption, setSelectedOption] = useState('clearEvent');
+  const [role, setrole] = useState('');
   
+  useEffect(() => {
+    (async () => {
+      try {
+        const storedRole = await SecureStore.getItemAsync('accprev');
+        setrole(storedRole);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    })();
+  }, []);
 
   const handlePurge = () => {
     onPurge(selectedOption);
@@ -24,6 +36,8 @@ const PurgeOptionsScreen = ({ visible, onClose, onPurge }) => {
         return 'Ends Log in period, Allows Logout';
       case 'endLogout':
         return 'Ends Logout Period, also ends the Event itself';
+      case 'EditEventTime':
+        return 'Modify the End time for the Selected Event';
       default:
         return '';
     }
@@ -46,13 +60,16 @@ const PurgeOptionsScreen = ({ visible, onClose, onPurge }) => {
             <Picker.Item label="Clear Login Data" value="clearLoginData" />
             <Picker.Item label="Clear Logout Data" value="clearLogoutData" />
             <Picker.Item label="Delete Event Entry" value="deleteEventEntry" />
+            {role === 'superadm' && (
+              <Picker.Item label="Edit Event End Time" value="EditEventTime" />
+            )}
           </Picker>
 
           <Text>{getDescription()}</Text>
         </View>
         <View style={{ width: '80%', flexDirection: 'row', justifyContent: 'space-between' }}>
         <TouchableOpacity onPress={handlePurge} style={styles.vtn}>
-                <Text style={styles.vtnText}>Save</Text>
+                <Text style={styles.vtnText}>Go</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={onClose} style={styles.vtn}>
               <Text style={styles.vtnText}>Close</Text>

@@ -160,6 +160,38 @@ const DataSyncScreen = () => {
     );
   };
 
+  const handleTotalCSVExport = async () => {
+    Alert.alert(
+      'Confirm Export',
+      'This will open the browser and download the file.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Export',
+          onPress: async () => {
+            
+
+            const exportUrl = `${check}/attappthree/flatten.php`;
+
+            try {
+              const result = await WebBrowser.openBrowserAsync(exportUrl);
+              if (result.type === 'cancel') {
+                Alert.alert('Export Canceled', 'The export operation was canceled.');
+              }
+            } catch (error) {
+              console.error('Error opening browser:', error);
+              Alert.alert('Export Failed', 'Error opening the export URL');
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
   const fetchOptions = async () => {
     setShowLoading(true);
     try {
@@ -348,6 +380,17 @@ const DataSyncScreen = () => {
 
       {/* View Logs Card */}
       <Card style={{ marginTop: 16 }}>
+        <Card.Content>
+          <Title>Export Fine Data SpreadSheet</Title>
+          <Paragraph>Download Spreeadsheet</Paragraph>
+        </Card.Content>
+
+        <Card.Actions>
+          <Button onPress={handleTotalCSVExport}>Export CSV File</Button>
+        </Card.Actions>
+      </Card>
+
+      <Card style={{ marginTop: 16, marginBottom: 20 }}>
         <Card.Content>
           <Title>View Logs</Title>
           <Paragraph>connection logs</Paragraph>

@@ -153,13 +153,7 @@ export default function App() {
       } else {
         // eror toat
         setScanned(false);
-        ToastAndroid.showWithGravityAndOffset(
-          `Error: wrong format`,
-          ToastAndroid.LONG,
-          ToastAndroid.BOTTOM,
-          25,
-          50
-        );
+        ToastAndroid.show(`Error: wrong format`,ToastAndroid.SHORT);
       }
     }
   };

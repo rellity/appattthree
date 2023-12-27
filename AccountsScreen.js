@@ -207,7 +207,7 @@ const AccountsScreen = ({navigation}) => {
             }
             SecureStore.setItemAsync('isLoggedIn', 'true');
             SecureStore.setItemAsync('accountName', username);
-            SecureStore.setItemAsync('accprev', data.user.accprev);
+            SecureStore.setItemAsync('accprev', response.data.user.accprev);
             SecureStore.setItemAsync('fname', data.user.fname);
             // set user role duiplay
             const storedAccprev = await SecureStore.getItemAsync('accprev');
@@ -350,9 +350,8 @@ const AccountsScreen = ({navigation}) => {
 
   const renderRow = ({ item }) => (
     <View style={styles.row}>
-      <Text style={[styles.cell, styles.text]}>{item.name}</Text>
+      <Text style={[styles.cell1, styles.text]}>{item.name}</Text>
       <Text style={[styles.cell, styles.text]}>{item.stuid}</Text>
-      <Text style={[styles.cell, styles.text]}>{item.yearsec}</Text>
       <TouchableOpacity onPress={() => handleDeleteRecord(item.id)} style={styles.cell}>
         <AntDesign name="delete" size={22} color="red" style={{alignSelf: 'center'}}/>
       </TouchableOpacity>
@@ -677,11 +676,23 @@ const styles = StyleSheet.create({
   },
   cell: {
     flex: 0,
-    width: '25%',
+    width: '33%',
     textAlign: 'center',
     margin: 1,
     borderWidth: 1,
-    padding: 5,
+    padding: 1,
+    borderColor: 'white',
+    alignSelf: 'center'
+  },
+  cell1: {
+    flex: 0,
+    width: '40%',
+    textAlign: 'center',
+    margin: 1,
+    borderWidth: 1,
+    padding: 1,
+    borderColor: 'white',
+    alignSelf: 'center'
   },
   underline: {
     textDecorationLine: 'underline',

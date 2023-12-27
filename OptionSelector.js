@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Alert,TouchableOpacity, StyleSheet, ToastAndroid } from 'react-native';
+import { View, Text, Alert,TouchableOpacity, StyleSheet, ToastAndroid, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
@@ -7,6 +7,10 @@ import { useNavigation } from '@react-navigation/native';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import PurgeOptionsScreen from './PurgeOptionsScreen';
 import { Title } from 'react-native-paper';
+import moment from 'moment';
+import * as SecureStore from 'expo-secure-store';
+import { TimerPickerModal } from "react-native-timer-picker";
+import { LinearGradient } from "expo-linear-gradient";
 
 const OptionSelector = () => {
   const { apiUrl } = useApiUrl();
@@ -22,12 +26,32 @@ const OptionSelector = () => {
   const showPicker =
   tableData.length > 0 &&
   tableData.some((event) => event.haslogin === 1 || event.haslogout === 1);
+  const [Endtimeone, setEndtimeone] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [istimended, setistimended] = useState(false);
+  const [role, setrole] = useState('');
+  const [showPickerOne, setShowPickerOne] = useState(false);
+  const [alarmString, setAlarmString] = useState(null);
+  const cdate = moment().utcOffset('+08:00');
+  const [currentDate, setcurrentDate] = useState(cdate.format('YYYY-MM-DD'));
+  const [endDate, setendDate] = useState(null);
+  const [currentD] = useState(cdate.format('YYYY-MM-DD'));
   
 
   useEffect(() => {
   fetchOptions();
   }, []); 
   
+  useEffect(() => {
+    (async () => {
+      try {
+        const storedRole = await SecureStore.getItemAsync('accprev');
+        setrole(storedRole);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    })();
+  }, []);
   const check = [apiUrl];
 
   const formatData = (data) => {
@@ -35,6 +59,23 @@ const OptionSelector = () => {
       <View key={index} style={styles.row}>
         <Text style={styles.label}>Created on:</Text>
         <Text style={styles.value}>{formatDateToGMT8(item.createdon)}</Text>
+        {item.status.toLowerCase() === 'ended' ? (
+          <>
+            <Text style={styles.label}>Ended on:</Text>
+            <Text style={styles.endedText}>{formatDateToGMT8(item.endedby)}</Text>
+            <Text style={styles.label}>Event Status:</Text>
+            <Text style={[styles.value, item.status.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
+              {item.status}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Text>Event End:</Text>
+            <Text style={[styles.value, item.status.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
+              {moment(item.eventdate).format('MMMM D YYYY, hh:mm A')}
+            </Text>
+          </>
+        )}
         <Text style={styles.label}>Created by:</Text>
         <Text style={styles.value}>{item.createdby}</Text>
         {item.loginstatus.toLowerCase() !== 'none' && (
@@ -53,20 +94,8 @@ const OptionSelector = () => {
         </Text>
         </>
         )}
-        {item.status.toLowerCase() === 'ended' && (
-          <>
-            <Text style={styles.label}>Event Status:</Text>
-            <Text style={[styles.value, item.status.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
-              {item.status}
-            </Text>
-            <Text style={styles.label}>Ended on:</Text>
-            <Text style={styles.endedText}>{formatDateToGMT8(item.endedby)}</Text>
-          </>
-        )}
-        {item.status.toLowerCase() === 'none' && (
-          <>
-           </>
-        )}
+        
+        
       </View>
     ));
   };
@@ -132,9 +161,8 @@ const OptionSelector = () => {
 
   const handleOptionChange = async (itemValue) => {
     setSelectedOption(itemValue);
-  
-    console.log('Selected option:', itemValue);
-  
+    setLoading(true);
+
     try {
       if (itemValue) {
         const check = [apiUrl];
@@ -142,29 +170,99 @@ const OptionSelector = () => {
   
         const response = await axios.get(responselink, { params: { value: itemValue } });
   
-        if (response.data.error) {
-          // error handling
-          Alert.alert('Error fetching data for the selected table:', response.data.error);
-          setTableData([]);
+        
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          setTableData(response.data);
+          setLoading(false)
         } else {
-          // Check if the data array is not empty before setting it
-          if (Array.isArray(response.data) && response.data.length > 0) {
-            setTableData(response.data);
-            
-          } else {
-            setTableData([]);
-          }
+          setTableData([]);
         }
-  
-        // log , tanggalon ni basta 
-        console.log('Response data:', response.data);
-      } else {
-        setTableData([]); // clear table data
+        
+        const endtimer = response.data.map(response => response.eventdate);
+        const endtt = moment(endtimer[0]);
+        console.log('Selected option:', endtt.format('YYYY-MM-DD hh:mm:ss A'));
+      
+        const currentDateTime = moment().utcOffset('+08:00');
+        console.log('current time: ', currentDateTime.format('YYYY-MM-DD hh:mm:ss A'));
+      
+        setistimended(endtt.isBefore(currentDateTime));
+
+        function checklogs() {
+          const haslogin = response.data[0].haslogin
+          const haslogout = response.data[0].haslogout
+          const logoutstatus = response.data[0].logoutstatus
+          const loginstatus = response.data[0].loginstatus
+          
+          if (haslogin === 1){
+            console.log('1')
+            if (haslogout === 1){
+              console.log('2')
+              if (loginstatus === 'ongoing' && logoutstatus === 'ongoing') {
+                console.log('starting', itemValue);
+
+                (async () => {
+                  try {
+                    const responseLogin = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: itemValue, column: 'login' } });
+                    const responseLogout = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: itemValue, column: 'logout' } });
+          
+                    // Process the results if needed
+                    console.log('Data for login:', responseLogin.data);
+                    console.log('Data for logout:', responseLogout.data);
+                  } catch (error) {
+                    console.error('Error:', error);
+                  }
+                })();
+                
+                
+              }
+            } else if (haslogout === 0){
+              (async () => {
+                try {
+                  const responseLogin = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: itemValue, column: 'login' } });
+
+                  console.log('Data for login:', responseLogin.data);
+                } catch (error) {
+                  console.error('Error:', error);
+                }
+              })();
+            }
+          } else if (haslogin === 0 && haslogout === 1){
+            (async () => {
+              try {
+                const responseLogout = await axios.get(`${check}/attappthree/evnt_end.php`, { params: { table: itemValue, column: 'logout' } });
+                console.log('Data for login:', responseLogout.data);
+              } catch (error) {
+                console.error('Error:', error);
+              }
+            })();
+          }
+        };
+
+        if (endtt.isBefore(currentDateTime) && response.data[0].status === 'ongoing') {
+          Alert.alert('Event Ended', 
+          'Event Logging Expired',
+          [
+            {
+              text: "OK",
+              onPress: () => { 
+                checklogs()
+                handleSave();
+              },
+            },
+          ]
+          );
+          return;
+        }
+        
+      } else if (itemValue === null) {
+        setTableData([]);
+        setLoading(false);
       }
+  
     } catch (error) {
       Alert.alert('Error fetching data for the selected table:', error);
     }
-    
+
   };
 
   const handlePurgeOptions = async (selectedMode) => {
@@ -303,6 +401,10 @@ const OptionSelector = () => {
         ToastAndroid.show(`Logout Ended: ${selectedOption}!`, ToastAndroid.SHORT);
       }
 
+      if (selectedMode === 'EditEventTime') {
+        setShowPickerOne(true);
+      }
+
       // Close the modal after completing the purge actions
       setPurgeOptionsModalVisible(false);
     } catch (error) {
@@ -310,6 +412,14 @@ const OptionSelector = () => {
       // Handle error
       Alert.alert('Error', 'Failed to purge options');
     }
+  };
+
+  const checkvalid = (endDate) => {
+    const date = moment(endDate, 'YYYY-MM-DD HH:mm:ss A');
+    const isValid = date.isBefore(moment()); 
+    console.log(moment())
+    console.log(date)
+    return isValid;
   };
   
   const handleSave = () => {
@@ -445,9 +555,13 @@ const OptionSelector = () => {
       </View>
       
 
-      {tableData.length > 0 && (
-          <Text>{formatData(tableData)}</Text>
-      )}
+      <View style={styles.containering}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" style={{marginTop: '25%'}}/>
+      ) : tableData ? (
+        <Text>{formatData(tableData)}</Text>
+      ) : null}
+      </View>
 
       <AwesomeAlert
         show={showLoading}
@@ -467,9 +581,56 @@ const OptionSelector = () => {
         onClose={() => setPurgeOptionsModalVisible(false)}
         onPurge={handlePurgeOptions}
       />
+
+      <TimerPickerModal
+          hideSeconds
+          visible={showPickerOne}
+          setIsVisible={setShowPickerOne}
+          onConfirm={(pickedDuration) => {
+              setAlarmString(moment(pickedDuration).format('hh:mm:ss A'));
+              
+              if (pickedDuration && checkvalid(moment(currentD + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A'))) {
+                const newDate = cdate.clone().add(1, 'day').format('YYYY-MM-DD');
+                setcurrentDate(newDate);
+                const send = moment(newDate + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A').format('YYYY-MM-DD HH:mm:ss');
+                if(moment(newDate + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A').isAfter(moment()))  {
+                  Alert.alert('Tip!', `Setting time that has already passed, will instead set it to tommorow's time` )
+                }
+
+                (async () => {
+                  try {
+                    await axios.get(`${check}/attappthree/timeedit.php`, { params: { table: selectedOption, time: send } });
+                  } catch (error) {
+                    console.error('Error fetching data:', error);
+                  }
+                })();
+              } 
+
+              if (pickedDuration && !checkvalid(moment(currentD + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A'))){
+                setcurrentDate(moment().format('YYYY-MM-DD'));
+                const send = moment(moment().format('YYYY-MM-DD') + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A');
+                
+                (async () => {
+                  try {
+                    await axios.get(`${check}/attappthree/timeedit.php`, { params: { table: selectedOption, time: send } });
+                  } catch (error) {
+                    console.error('Error fetching data:', error);
+                  }
+                })();
+              }
+              setShowPickerOne(false);
+              ToastAndroid.show('End Time Modified!', ToastAndroid.LONG);
+              handleSave()
+          }}
+          modalTitle="Modify Event End Time"
+          onCancel={() => setShowPickerOne(false)}
+          LinearGradient={LinearGradient}
+          styles={{
+              theme: "light",
+          }}
+      />
     </View>
   );
-  
 };
 
 const styles = StyleSheet.create({
@@ -478,6 +639,14 @@ const styles = StyleSheet.create({
     flexDirection: 'collumn',
     alignItems: 'center',
     backgroundColor: '#FFFFFF', 
+  },
+
+  containering: {
+    flex: 0,
+    flexDirection: 'collumn',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center'
   },
   buttonText: {
     color: '#fff',
@@ -488,7 +657,7 @@ const styles = StyleSheet.create({
     width: 290,
     height: 60,
     backgroundColor: '#007bff',
-    borderRadius: 30,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -504,11 +673,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   sbutton: {
-    width: 140,
-    height: 60,
+    width: 120,
+    height: 50,
     margin: 5,
     backgroundColor: '#007bff',
-    borderRadius: 30,
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,

@@ -6,6 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { Card, Title } from 'react-native-paper';
 import Checkbox from 'expo-checkbox';
+import { TimerPickerModal } from "react-native-timer-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import moment from 'moment';
 
 const EventCreationScreen = () => {
   const { apiUrl } = useApiUrl();
@@ -17,8 +20,17 @@ const EventCreationScreen = () => {
   console.log("logs", check);
   const [isCheckedIN, setCheckedIN] = useState(true);
   const [isCheckedOUT, setCheckedOUT] = useState(true);
+  const [showPicker, setShowPicker] = useState(false);
+  const [alarmString, setAlarmString] = useState(null);
+  const cdate = moment().utcOffset('+08:00');
+  const [currentDate, setcurrentDate] = useState(cdate.format('YYYY-MM-DD'));
+  const [endDate, setendDate] = useState(null);
+  const [currentD] = useState(cdate.format('YYYY-MM-DD'));
 
-
+  console.log('currentdate: ', currentDate);
+  console.log('alarm time: ', alarmString);
+  
+  console.log('end date: ', endDate);
   useEffect(() => {
     const fetchstoredName = async () => {
       try {
@@ -37,6 +49,7 @@ const EventCreationScreen = () => {
   useEffect(() => {
     console.log(fname);
   }, [fname]); //
+
 
   console.log(isCheckedIN);
   console.log(isCheckedOUT);
@@ -71,8 +84,13 @@ const EventCreationScreen = () => {
       Alert.alert('Error', 'Select at least 1 log method.');
       return;
     }
+
+    if (alarmString === null) {
+      Alert.alert('Error', 'Please set a valid end time');
+      return;
+    }
     
-    try {
+    try { 
       const checkDuplicateUrl = `${check}/attappthree/event_check_name.php?eventName=${eventName}`;
       const duplicateCheckResponse = await axios.get(checkDuplicateUrl);
 
@@ -88,6 +106,7 @@ const EventCreationScreen = () => {
         price: eventPrice, 
         haslogin: +isCheckedIN,
         haslogout: +isCheckedOUT,
+        endtime: moment(endDate, 'YYYY-MM-DD HH:mm:ss A').format('YYYY-MM-DDTHH:mm:ss.SSSZ')
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +122,7 @@ const EventCreationScreen = () => {
           [
             {
               text: 'OK',
-              onPress: () => {
+              onPress: () => { 
                 handleSave();
               },
             },
@@ -126,6 +145,25 @@ const EventCreationScreen = () => {
         { name: 'OptionSelector' },
       ],
     });
+  };
+
+  const checkvalid = (endDate) => {
+    const date = moment(endDate, 'YYYY-MM-DD HH:mm:ss A');
+    const isValid = date.isBefore(moment()); 
+    console.log(moment())
+    console.log(date)
+    return isValid;
+  };
+
+  const isToday = () => {
+    const today = moment().utcOffset('+08:00');
+    const endDateString = moment(endDate, 'YYYY-MM-DD hh:mm:ss A');
+    
+    if (endDateString.isSame(today, 'day')) {
+      return `Today, ${moment(endDate, 'YYYY-MM-DD hh:mm:ss A').format('hh:mm A')}`;
+    } else if (!endDateString.isSame(today, 'day')) {
+      return `Tomorrow, ${moment(endDate, 'YYYY-MM-DD hh:mm:ss A').format('hh:mm A')}`;
+    }
   };
 
   return (
@@ -168,12 +206,76 @@ const EventCreationScreen = () => {
             color={isCheckedOUT ? '#4630EB' : undefined}
           />
           <Text style={styles.paragraph}>Logout</Text>
+
+
+          
+          </View>
+
+          <View>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowPicker(true)}>
+            <View style={{alignItems: "center"}}>
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => setShowPicker(true)}>
+                    <View style={{marginTop: 10}}>
+                        <Text
+                            style={{paddingVertical: 10,
+                            paddingHorizontal: 18,
+                            borderWidth: 1,
+                            borderRadius: 10,
+                            fontSize: 16,
+                            overflow: "hidden",
+                            borderColor: "#8C8C8C",
+                            color: "#8C8C8C"
+                            }}>
+                            {alarmString !== null ?  (
+                                <Text style={{color: "#000000", fontSize: 16}}>
+                                    {isToday(endDate)}
+                                </Text>
+                            ) : 'Set Event End Time'}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
+        </TouchableOpacity>
           </View>
         </Card.Content>
       </Card>
       <TouchableOpacity style={styles.button} onPress={createEvent}>
         <Text style={styles.buttonText}>Create Event</Text>
       </TouchableOpacity>
+
+      <TimerPickerModal
+          hideSeconds
+          visible={showPicker}
+          setIsVisible={setShowPicker}
+          onConfirm={(pickedDuration) => {
+              setAlarmString(moment(pickedDuration).format('hh:mm:ss A'));
+              
+              if (pickedDuration && checkvalid(moment(currentD + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A'))) {
+                const newDate = cdate.clone().add(1, 'day').format('YYYY-MM-DD');
+                setcurrentDate(newDate);
+                setendDate(newDate + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A');
+                console.log('stupid', checkvalid(moment(currentDate + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A')))
+              } 
+
+              if (pickedDuration && !checkvalid(moment(currentD + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A'))){
+                setcurrentDate(moment().format('YYYY-MM-DD'));
+                setendDate(moment().format('YYYY-MM-DD') + ' ' + moment(pickedDuration).format('hh:mm:ss A'), 'YYYY-MM-DD hh:mm:ss A');
+                console.log('stupid')
+              }
+              setShowPicker(false);
+              console.log('not',currentDate)
+          }}
+          modalTitle="Set Event End Time"
+          onCancel={() => setShowPicker(false)}
+          LinearGradient={LinearGradient}
+          styles={{
+              theme: "light",
+          }}
+      />
     </View>
   );
 };
@@ -203,6 +305,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 16,
+    alignSelf: 'center'
   },
   title: {
     color: 'black',

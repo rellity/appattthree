@@ -1,8 +1,11 @@
 import React, { useState,useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, Button } from 'react-native';
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
 import AwesomeAlert from 'react-native-awesome-alerts';
+import CameraModal from './CameraModal';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Entypo } from '@expo/vector-icons';
 
 const StudentLookupScreen = () => {
   const [idNumber, setIdNumber] = useState('');
@@ -11,8 +14,28 @@ const StudentLookupScreen = () => {
   const [fineData, setFineData] = useState(null);
   const { apiUrl } = useApiUrl();
   const [showLoading, setShowLoading] = useState(false);
+  const [isCameraVisible, setIsCameraVisible] = useState(false);
 
   const check = [apiUrl];
+
+
+  const handleBarCodeScanned = ({ type, data }) => {
+    if (type === BarCodeScanner.Constants.BarCodeType.code128) {
+     setIdNumber(data);
+    } else {
+      return;
+    }
+    setIsCameraVisible(false);
+  };
+
+  useEffect(() => {
+    if (idNumber && idNumber.length === 9 && isCameraVisible === true) {
+      setTimeout(() => {
+        handleLookup();
+        setIsCameraVisible(false);
+      }, 100);
+    }
+  }, [idNumber]);
 
   const handleLookup = async () => {
 
@@ -91,16 +114,26 @@ const StudentLookupScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text>Enter ID Number:</Text>
+      <View style={{flexDirection: 'row'}}>
       <TextInput
         style={styles.input}
         value={idNumber}
         onChangeText={handleInputChange}
         placeholder="ID Number"
       />
+      <TouchableOpacity style={styles.button2} onPress={() => setIsCameraVisible(true)}>
+      <Entypo
+        name="camera"
+        size={30}
+        color="white" />
+      </TouchableOpacity>
+      </View>
       <TouchableOpacity style={styles.button} onPress={handleLookup}>
         <Text style={styles.buttonText}>Lookup Student</Text>
       </TouchableOpacity>
+
+      
+
       {studentData || eventData || fineData ? (
         <View style={styles.scrollableCard}>
             
@@ -170,6 +203,13 @@ const StudentLookupScreen = () => {
         titleStyle={styles.alertTitle}
         progressColor="#007AFF" 
       />
+
+      <CameraModal
+        isVisible={isCameraVisible}
+        onClose={() => setIsCameraVisible(false)}
+        handleBarCodeScanned={handleBarCodeScanned}
+      />
+
     </View>
   );
 };
@@ -182,12 +222,13 @@ const styles = StyleSheet.create({
       backgroundColor: '#FFFFFF',
     },
     input: {
-      width: 300,
-      height: 40,
+      width: 250,
+      height: 50,
       borderColor: 'gray',
       borderWidth: 1,
       marginBottom: 20,
       padding: 10,
+      marginRight: 10
     },
     buttonText: {
       color: '#fff',
@@ -198,7 +239,16 @@ const styles = StyleSheet.create({
       width: 200,
       height: 50,
       backgroundColor: '#007bff',
-      borderRadius: 25,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 10
+    },
+    button2: {
+      width: 50,
+      height: 50,
+      backgroundColor: '#007bff',
+      borderRadius: 10,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -213,7 +263,7 @@ const styles = StyleSheet.create({
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 5,
-      maxHeight: 600,
+      maxHeight: 580,
       width: 300,
     },
     studentInfoContainer: {
