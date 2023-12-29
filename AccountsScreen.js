@@ -392,25 +392,15 @@ const AccountsScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       {!showsetterLoading && (
-        <React.Fragment>
-      {/* {!userRole && (
-      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>SERVER URL: { check }</Text>)} */}
-      {!userRole && (
-          <Image
-          source={require('./assets/CCSIT.png')} 
-          style={styles.logo2}
-          resizeMode="contain" 
-          />
-      )}
-      
-      <Text style={{ textAlign: 'center', textAlignVertical: 'center', top: 60, fontSize: 20, fontWeight: 'bold', fontFamily: 'sans-serif-condensed' }}>ICTS LOGGER</Text>
-      {userRole && (
-          <Image
-          source={require('./assets/CCSIT.png')} 
-          style={styles.logo}
-          resizeMode="contain" 
-          />
-      )}
+      <React.Fragment>
+      <View style={{position: 'absolute', top: '10%', left: 0, right: 0, justifyContent: 'center', alignItems: 'center'}}>
+      <Image
+        source={require('./assets/CCSIT.png')} 
+        style={styles.logo}
+        resizeMode="contain" 
+      />
+      <Text style={{ alignSelf: 'center', textAlignVertical: 'center', fontSize: 20, fontWeight: 'bold', fontFamily: 'sans-serif-condensed'}}>ICTS LOGGER</Text>
+      </View>
       {isLoggedIn ? (
         <View style={styles.loggedInContainer}>
           <TouchableOpacity style={styles.loginButton2} onPress={handleLogout}>
@@ -574,7 +564,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   loginContainer: {
-    top: 80,
+    top: '10%',
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,
@@ -605,19 +595,8 @@ const styles = StyleSheet.create({
     marginRight: 25,
   },
   logo: {
-    position: 'absolute',
-    top: 120,
     width: 150,
     height: 150, 
-    marginBottom: 30,
-    alignSelf: 'center'
-  },
-  logo2: {
-    position: 'absolute',
-    top: 120,
-    width: 150,
-    height: 150, 
-    marginBottom: 30,
     alignSelf: 'center'
   },
   focusedInput: {
@@ -662,7 +641,7 @@ const styles = StyleSheet.create({
   },
   
   loginButton1: {
-    top: 80,
+    top: '10%',
     backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 5,

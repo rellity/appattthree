@@ -763,19 +763,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  alertContainer: {
-    borderRadius: 10,
-    backgroundColor: 'white',
-    padding: 20,
-    width: '50%',
-    alignItems: 'center',
-  },
-  alertTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#007AFF', 
-    marginBottom: 10,
-  },
   cardContainer: {
     alignItems: 'center',
     justifyContent: 'center',
