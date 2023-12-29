@@ -8,6 +8,7 @@ import axios from 'axios';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import { AntDesign } from '@expo/vector-icons';
+import { ActivityIndicator } from 'react-native';
 
 const AccountsScreen = ({navigation}) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -20,13 +21,38 @@ const AccountsScreen = ({navigation}) => {
   const [userRole, setUserRole] = useState('');
   const [funame, setFname] = useState('')
   const [showLoading, setShowLoading] = useState(false);
+  const [showsetterLoading, setsetterShowLoading] = useState(false);
   const [options, setOptions] = useState([]);
   const [selectedOption, setSelectedOption] = useState(null);
   const [data, setData] = useState([]);
   const [isAlertVisible, setAlertVisible] = useState(false);
+  const [loadingText, setLoadingText] = useState('Loading Records');
   let content;
 
   const check = [ apiUrl ];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const interval = setInterval(() => {
+      if (isMounted && showsetterLoading) {
+        setLoadingText((prevText) => {
+          // Rotate the dots to create a loading effect
+          const dots = prevText === 'Loading Records...' ? 'Loading Records' : `${prevText}.`;
+          return `${dots}`;
+        });
+      } else {
+        clearInterval(interval);
+      }
+    }, 400); // Adjust the interval as needed
+
+    // Clean up the interval when the component unmounts or loading is complete
+    return () => {
+      clearInterval(interval);
+      isMounted = false;
+      setLoadingText('Loading Records');
+    };
+  }, [showsetterLoading]);
 
   const fetchOptions = async () => {
     try {
@@ -195,6 +221,7 @@ const AccountsScreen = ({navigation}) => {
           const data = response.data;
   
           if (data.success) {
+            
             // store login state, account name, password, and accprev idk for later use???
             setIsLoggedIn(true);
             setAccountName(username);
@@ -228,6 +255,10 @@ const AccountsScreen = ({navigation}) => {
           reject(error);
         } finally {
           setShowLoading(false);
+          setsetterShowLoading(true);
+          setTimeout(() => {
+            setsetterShowLoading(false);
+          }, 2000);
         }
       });
   
@@ -360,8 +391,19 @@ const AccountsScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+      {!showsetterLoading && (
+        <React.Fragment>
+      {/* {!userRole && (
+      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>SERVER URL: { check }</Text>)} */}
       {!userRole && (
-      <Text style={{ textAlign: 'center', textAlignVertical: 'center' }}>SERVER URL: { check }</Text>)}
+          <Image
+          source={require('./assets/CCSIT.png')} 
+          style={styles.logo2}
+          resizeMode="contain" 
+          />
+      )}
+      
+      <Text style={{ textAlign: 'center', textAlignVertical: 'center', top: 60, fontSize: 20, fontWeight: 'bold', fontFamily: 'sans-serif-condensed' }}>ICTS LOGGER</Text>
       {userRole && (
           <Image
           source={require('./assets/CCSIT.png')} 
@@ -387,7 +429,7 @@ const AccountsScreen = ({navigation}) => {
         
           
         <View style={styles.loginContainer}>
-          <Text style={styles.loginText}>Log In</Text>
+          <Text style={styles.loginText}>Officer Login</Text>
 
           <TextInput
             style={[styles.input, isUsernameFocused && styles.focusedInput]}
@@ -414,7 +456,7 @@ const AccountsScreen = ({navigation}) => {
                 onPress={() => setShowPassword(!showPassword)}
               >
                 {/* icon sa remember password */}
-                <Icon name={showPassword ? 'eye' : 'eye-slash'} size={20} color="#3498db" />
+                <Icon name={showPassword ? 'eye' : 'eye-slash'} size={20} color={showPassword ? '#3498db' : 'black'}  />
               </TouchableOpacity>
             </View>
 
@@ -488,8 +530,6 @@ const AccountsScreen = ({navigation}) => {
         </View>
         
       </Modal>
-
-      {/* Awesome Alert for loading state */}
       <AwesomeAlert
         show={showLoading}
         showProgress
@@ -502,6 +542,18 @@ const AccountsScreen = ({navigation}) => {
         titleStyle={styles.alertTitle}
         progressColor="#007AFF" 
       />
+      </React.Fragment>
+      )}
+
+      {showsetterLoading && (
+        <React.Fragment>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={{alignSelf: 'center', marginTop: 10, fontSize: 18, fontWeight: 'bold'}}>{loadingText}</Text>
+        </React.Fragment>
+      )}
+
+      {/* Awesome Alert for loading state */}
+      
     </View>
   );
 };
@@ -515,12 +567,14 @@ const styles = StyleSheet.create({
   },
   loggedInContainer: {
     alignItems: 'center',
+    top: 80,
   },
   welcomeText: {
     fontSize: 18,
     marginBottom: 10,
   },
   loginContainer: {
+    top: 80,
     backgroundColor: '#ffffff',
     padding: 20,
     borderRadius: 10,
@@ -538,19 +592,29 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    alignSelf: 'center',
   },
   input: {
     height: 40,
     borderColor: 'gray',
-    borderWidth: 1,
+    borderWidth: 0,
+    borderBottomWidth: 1,
     marginBottom: 10,
     paddingHorizontal: 10,
-    borderRadius: 5,
+    borderRadius: 2,
     marginRight: 25,
   },
   logo: {
     position: 'absolute',
-    top: 50,
+    top: 120,
+    width: 150,
+    height: 150, 
+    marginBottom: 30,
+    alignSelf: 'center'
+  },
+  logo2: {
+    position: 'absolute',
+    top: 120,
     width: 150,
     height: 150, 
     marginBottom: 30,
@@ -568,7 +632,9 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     borderColor: 'gray',
-    borderWidth: 1,
+    borderWidth: 0,
+    borderBottomWidth: 1,
+    marginBottom: 10,
     paddingHorizontal: 10,
     borderRadius: 5,
   },
@@ -596,6 +662,7 @@ const styles = StyleSheet.create({
   },
   
   loginButton1: {
+    top: 80,
     backgroundColor: '#007bff',
     padding: 15,
     borderRadius: 5,

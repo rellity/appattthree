@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert,TouchableOpacity, StyleSheet, ToastAndroid, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { Card } from 'react-native-elements';
 import axios from 'axios';
 import { useApiUrl } from './ApiUrlContext';
 import { useNavigation } from '@react-navigation/native';
@@ -65,12 +66,12 @@ const OptionSelector = () => {
             <Text style={styles.endedText}>{formatDateToGMT8(item.endedby)}</Text>
             <Text style={styles.label}>Event Status:</Text>
             <Text style={[styles.value, item.status.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
-              {item.status}
+            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
             </Text>
           </>
         ) : (
           <>
-            <Text>Event End:</Text>
+            <Text>Logging End:</Text>
             <Text style={[styles.value, item.status.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
               {moment(item.eventdate).format('MMMM D YYYY, hh:mm A')}
             </Text>
@@ -82,7 +83,7 @@ const OptionSelector = () => {
         <>
         <Text style={styles.label}>Login Status:</Text>
         <Text style={[styles.value, item.loginstatus.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
-          {item.loginstatus}
+          {item.loginstatus.charAt(0).toUpperCase() + item.status.slice(1)}
         </Text>
         </>
         )}
@@ -90,7 +91,7 @@ const OptionSelector = () => {
         <>
         <Text style={styles.label}>Logout Status:</Text>
         <Text style={[styles.value, item.logoutstatus.toLowerCase() === 'ongoing' ? styles.ongoingText : styles.endedText]}>
-          {item.logoutstatus}
+          {item.logoutstatus.charAt(0).toUpperCase() + item.status.slice(1)}
         </Text>
         </>
         )}
@@ -441,10 +442,11 @@ const OptionSelector = () => {
   return (
     <View style={styles.container}>
       <Title style={styles.title}>View Events</Title>
+      <View style={styles.picker}>
       <Picker
         selectedValue={selectedOption}
         onValueChange={handleOptionChange}
-        style={styles.picker}
+        
       >
         
         <Picker.Item label="Select an Event Option..." value={null} />
@@ -458,11 +460,13 @@ const OptionSelector = () => {
           )
         ))}
       </Picker>
+      </View>
       {tableData && Array.isArray(tableData) && tableData.length > 0 && (
+        <View style={styles.picker2}>
         <Picker
           selectedValue={selectedLog}
           onValueChange={(itemValue) => setselectedLog(itemValue)}
-          style={styles.picker}
+          
         >
           <Picker.Item label="Select either Login or Logout" value={null} />
 
@@ -474,6 +478,7 @@ const OptionSelector = () => {
             <Picker.Item label="Log Logout" value="logout" />
           )}
         </Picker>
+        </View>
       )}
       <View style={styles.scontainer}>
         <TouchableOpacity
@@ -558,9 +563,16 @@ const OptionSelector = () => {
       <View style={styles.containering}>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" style={{marginTop: '25%'}}/>
-      ) : tableData ? (
-        <Text>{formatData(tableData)}</Text>
-      ) : null}
+      ) : (tableData.length > 0) ? (
+        <React.Fragment>
+          
+          <View style={styles.cardContainer}>
+            <Card style={styles.card}>
+              <Text>{formatData(tableData)}</Text>
+            </Card>
+          </View>
+        </React.Fragment>
+      ) : ''}
       </View>
 
       <AwesomeAlert
@@ -640,7 +652,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFFFFF', 
   },
-
   containering: {
     flex: 0,
     flexDirection: 'collumn',
@@ -657,7 +668,7 @@ const styles = StyleSheet.create({
     width: 290,
     height: 60,
     backgroundColor: '#007bff',
-    borderRadius: 10,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
@@ -675,22 +686,35 @@ const styles = StyleSheet.create({
   sbutton: {
     width: 120,
     height: 50,
-    margin: 5,
+    margin: 10,
+    marginTop: 3,
     backgroundColor: '#007bff',
-    borderRadius: 5,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
   },
   picker: {
-    width: 300, 
+    height: 50,
+    width: 300,
+    marginBottom: 15,
+    color: 'black',
     justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: 'gray',
+    borderWidth: 0,
+    borderRadius: 1, 
+    borderBottomWidth: 1,
+  },
+  picker2: {
+    height: 50,
+    width: 300,
+    marginBottom: 5,
+    color: 'black',
+    justifyContent: 'center',
+    borderColor: 'gray',
+    borderWidth: 0,
+    borderRadius: 1, 
+    borderBottomWidth: 1,
   },
   bottomButtonContainer: {
     position: 'absolute',
@@ -751,6 +775,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#007AFF', 
     marginBottom: 10,
+  },
+  cardContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    width: '80%',
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: 'white', 
+    shadowColor: 'grey',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
 

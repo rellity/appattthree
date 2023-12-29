@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Modal, Button } from 'react-native';
 import axios from 'axios'; 
 import { useApiUrl } from './ApiUrlContext';
@@ -15,6 +15,7 @@ const StudentLookupScreen = () => {
   const { apiUrl } = useApiUrl();
   const [showLoading, setShowLoading] = useState(false);
   const [isCameraVisible, setIsCameraVisible] = useState(false);
+  const [fromcamera, setfromcamera] = useState(false);
 
   const check = [apiUrl];
 
@@ -22,20 +23,22 @@ const StudentLookupScreen = () => {
   const handleBarCodeScanned = ({ type, data }) => {
     if (type === BarCodeScanner.Constants.BarCodeType.code128) {
      setIdNumber(data);
+     setfromcamera(true);
     } else {
       return;
     }
     setIsCameraVisible(false);
   };
 
+
   useEffect(() => {
-    if (idNumber && idNumber.length === 9 && isCameraVisible === true) {
+    if (idNumber && idNumber.length === 9 && isCameraVisible === false && fromcamera === true) {
       setTimeout(() => {
         handleLookup();
-        setIsCameraVisible(false);
+        setfromcamera(false);
       }, 100);
     }
-  }, [idNumber]);
+  }, [idNumber, isCameraVisible, fromcamera]);
 
   const handleLookup = async () => {
 
@@ -228,6 +231,7 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       marginBottom: 20,
       padding: 10,
+      borderRadius: 10,
       marginRight: 10
     },
     buttonText: {
@@ -253,16 +257,12 @@ const styles = StyleSheet.create({
       alignItems: 'center',
     },
     scrollableCard: {
-      padding: 20,
+      padding: 5,
+      backgroundColor: '#f5f5f5',
+      border: 5,
+      borderColor: 'grey',
+      borderWidth: 2,
       borderRadius: 10,
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
       maxHeight: 580,
       width: 300,
     },

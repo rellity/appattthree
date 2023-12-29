@@ -218,9 +218,9 @@ const styles = StyleSheet.create({
     marginLeft: 10, // Added spacing to the left of the checkbox text
   },
   saveButton: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#007bff',
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 20,
     marginTop: 20, // Added margin to the top
     width: '100%',
     alignItems: 'center',

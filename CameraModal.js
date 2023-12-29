@@ -20,6 +20,7 @@ const CameraModal = ({ isVisible, onClose, handleBarCodeScanned }) => {
           type={Camera.Constants.Type.back}
           onBarCodeScanned={handleBarCodeScanned}
         />
+        <View style={styles.highlightView} />
       </View>
     );
   };
@@ -58,7 +59,17 @@ const styles = StyleSheet.create({
     width: '80%',
     height: '40%',
     borderRadius: 10,
-    
+  },
+  highlightView: {
+    position: 'absolute',
+    alignSelf: 'center', 
+    marginTop: '10%',
+    left: '10%', 
+    width: '80%',
+    height: '50%', 
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderWidth: 1,
+    borderColor: 'grey', 
   },
   camera: {
     flex: 1,

@@ -97,7 +97,9 @@ const MainPage = ({ route,navigation }) => {
           navigation.navigate('SettingsScreen');
         }}
       >
-        <Text style={styles.buttonText}>Server Settings</Text>
+        <Text onPress={() => {
+          navigation.navigate('SettingsScreen');
+        }} style={styles.buttonText}>Server Settings</Text>
       </TouchableOpacity>
       
     </View>
