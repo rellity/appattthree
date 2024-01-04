@@ -26,3 +26,5 @@ then mao ra to free na nimo usbon tanan kopyahon or i fork ni
 paki credit lamang ko char
 \
 ug kaya nimo basahon ning code nahu hahahhahahahahha
+\
+planning to add an api breaking update in the next 3 months
