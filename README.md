@@ -17,7 +17,7 @@ kung cmd o powershell ```cd appattthree```
 
 sunod i run ```npm install```
 then huwati kadali or dugay depende sa speed sa internet nimo
-\ 
+ 
 nga mahuman ug down load ag mga dependencies nija
 \
 then mao ra to free na nimo usbon tanan kopyahon or i fork ni
