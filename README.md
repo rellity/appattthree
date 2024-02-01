@@ -14,7 +14,6 @@ i run ni ```git clone https://github.com/rellity/appattthree.git```
 sunod is i change directory nimo ag terminal nimo 
 \
 kung cmd o powershell ```cd appattthree```
-\
 
 sunod i run ```npm install```
 then huwati kadali or dugay depende sa speed sa internet nimo,
