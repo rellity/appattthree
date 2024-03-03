@@ -1,24 +1,32 @@
-import React,{ useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Image, ToastAndroid } from 'react-native';
-import { useApiUrl } from './ApiUrlContext';
-import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Image,
+  ToastAndroid,
+} from "react-native";
+import { useApiUrl } from "../../utils/ApiUrlContext";
+import * as SecureStore from "expo-secure-store";
+import axios from "axios";
 
-const MainPage = ({ route,navigation }) => {
+const MainPage = ({ route, navigation }) => {
   const { apiUrl } = useApiUrl();
   const updatedApiUrl = route.params ? route.params.updatedApiUrl : null;
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
   // const [accountName, setAccountName] = useState('');
-  
+
   useEffect(() => {
-    SecureStore.getItemAsync('isLoggedIn')
+    SecureStore.getItemAsync("isLoggedIn")
       .then((storedIsLoggedIn) => {
-        if (storedIsLoggedIn !== 'true') {
-          navigation.navigate('AccountsScreen');
+        if (storedIsLoggedIn !== "true") {
+          navigation.navigate("AccountsScreen");
         }
       })
-      .catch((error) => console.error('Error reading from SecureStore:', error));
-
+      .catch((error) =>
+        console.error("Error reading from SecureStore:", error)
+      );
   }, [navigation]);
 
   // const addLogs = ( async() => {
@@ -44,7 +52,7 @@ const MainPage = ({ route,navigation }) => {
   //   .then((storedIsLoggedIn) => {
   //     const isLoggedIn = storedIsLoggedIn === 'true' || storedIsLoggedIn === true;
   //     setIsLoggedIn(isLoggedIn);
-      
+
   //     if (isLoggedIn) {
   //       SecureStore.getItemAsync('accountName').then((storedAccountName) => {
   //         setAccountName(storedAccountName);
@@ -52,7 +60,7 @@ const MainPage = ({ route,navigation }) => {
   //     }
   //   })
   //   .catch((error) => console.error('Error reading from SecureStore:', error));
-    
+
   //   if (isLoggedIn) {
   //     addLogs();
   //   }
@@ -61,32 +69,30 @@ const MainPage = ({ route,navigation }) => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('./assets/CCSIT.png')} 
+        source={require("../../../assets/CCSIT.png")}
         style={styles.logo}
-        resizeMode="contain" 
+        resizeMode="contain"
       />
-      
-      <Text style={styles.watermark}>
-        API URL: {updatedApiUrl || apiUrl}
-      </Text>
+
+      <Text style={styles.watermark}>API URL: {updatedApiUrl || apiUrl}</Text>
 
       {/* Buttons */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('BarcodeGenerator')}
+        onPress={() => navigation.navigate("BarcodeGenerator")}
       >
         <Text style={styles.buttonText}>Student Registration</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('OptionSelector')}
+        onPress={() => navigation.navigate("OptionSelector")}
       >
         <Text style={styles.buttonText}>View Events</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate('StudentLookupScreen');
+          navigation.navigate("StudentLookupScreen");
         }}
       >
         <Text style={styles.buttonText}>Student Lookup</Text>
@@ -94,41 +100,43 @@ const MainPage = ({ route,navigation }) => {
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate('SettingsScreen');
+          navigation.navigate("SettingsScreen");
         }}
       >
-        <Text onPress={() => {
-          navigation.navigate('SettingsScreen');
-        }} style={styles.buttonText}>Server Settings</Text>
+        <Text
+          onPress={() => {
+            navigation.navigate("SettingsScreen");
+          }}
+          style={styles.buttonText}
+        >
+          Server Settings
+        </Text>
       </TouchableOpacity>
-      
     </View>
   );
 };
 
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF', 
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
   },
   logo: {
     width: 200,
-    height: 200, 
+    height: 200,
     marginBottom: 30,
   },
   button: {
     width: 300,
     height: 60,
-    backgroundColor: '#007bff',
+    backgroundColor: "#007bff",
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -138,20 +146,20 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   watermark: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     padding: 10,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 12,
-  }, 
+  },
 });
 
 export default MainPage;

@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { Button, Card, Title, Paragraph } from 'react-native-paper';
-import * as DocumentPicker from 'expo-document-picker';
-import axios from 'axios';
-import { useApiUrl } from './ApiUrlContext';
-import * as WebBrowser from 'expo-web-browser';
-import { FontAwesome } from '@expo/vector-icons';
-import AwesomeAlert from 'react-native-awesome-alerts';
-import { Picker } from '@react-native-picker/picker';
+import React, { useState, useEffect } from "react";
+import { ScrollView, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { Button, Card, Title, Paragraph } from "react-native-paper";
+import * as DocumentPicker from "expo-document-picker";
+import axios from "axios";
+import { useApiUrl } from "../../utils/ApiUrlContext";
+
+import * as WebBrowser from "expo-web-browser";
+import { FontAwesome } from "@expo/vector-icons";
+import AwesomeAlert from "react-native-awesome-alerts";
+import { Picker } from "@react-native-picker/picker";
 
 const DataSyncScreen = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -22,7 +23,7 @@ const DataSyncScreen = () => {
   const handleImport = async () => {
     try {
       if (!selectedFile) {
-        Alert.alert('No File Selected', 'Please select an SQL file');
+        Alert.alert("No File Selected", "Please select an SQL file");
         return;
       }
 
@@ -30,81 +31,89 @@ const DataSyncScreen = () => {
         setShowLoading(true);
         const compurl = `${check}/attappthree/dbmt.php`;
         const response = await axios.get(compurl);
-        console.log('table', response.data);
+        console.log("table", response.data);
         if (response.data.success === false) {
-            setShowLoading(false);
-            Alert.alert('Database is dirty!', 'Drop all data first and do not initialize.');
-            return;
-        } 
-      } catch (error) {
-          console.error('Error checking database status:', error);
           setShowLoading(false);
-            Alert.alert('Error', 'Failed to check database status');
-            return;
+          Alert.alert(
+            "Database is dirty!",
+            "Drop all data first and do not initialize."
+          );
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking database status:", error);
+        setShowLoading(false);
+        Alert.alert("Error", "Failed to check database status");
+        return;
       }
 
       const formData = new FormData();
       const file = {
         uri: selectedFile,
-        type: 'application/sql',
-        name: 'sqlFile.sql', // do not change
+        type: "application/sql",
+        name: "sqlFile.sql", // do not change
       };
 
-      formData.append('sqlFile', file);
+      formData.append("sqlFile", file);
 
       const compurl = `${check}/attappthree/import_data.php`;
       const response = await axios.post(compurl, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
       setShowLoading(false);
       console.log(response.data);
 
-      Alert.alert('Import Successful', 'SQL file imported successfully');
+      Alert.alert("Import Successful", "SQL file imported successfully");
     } catch (error) {
-      console.error('Error importing file:', error);
+      console.error("Error importing file:", error);
 
-      Alert.alert('Import Failed', 'Error importing SQL file');
+      Alert.alert("Import Failed", "Error importing SQL file");
     }
   };
 
   const pickDocument = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({ type: 'application/*' });
-      console.log('DocumentPicker result:', result);
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "application/*",
+      });
+      console.log("DocumentPicker result:", result);
       setSelectedFileName(result);
 
       if (!result.cancelled && result.assets && result.assets.length > 0) {
         setSelectedFile(result.assets[0].uri);
       }
     } catch (error) {
-      console.error('Error selecting file:', error);
+      console.error("Error selecting file:", error);
     }
   };
 
   const handleExport = () => {
     Alert.alert(
-      'Confirm Export',
-      'This will open the browser and download the file.',
+      "Confirm Export",
+      "This will open the browser and download the file.",
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Export',
+          text: "Export",
           onPress: () => {
             const exportUrl = `${check}/attappthree/export_data.php`;
             WebBrowser.openBrowserAsync(exportUrl)
-              .then(result => {
-                if (result.type === 'cancel') {
-                  Alert.alert('Export Canceled', 'The export operation was canceled.');
+              .then((result) => {
+                if (result.type === "cancel") {
+                  Alert.alert(
+                    "Export Canceled",
+                    "The export operation was canceled."
+                  );
                 }
               })
-              .catch(error => {
-                console.error('Error opening browser:', error);
-                Alert.alert('Export Failed', 'Error opening the export URL');
+              .catch((error) => {
+                console.error("Error opening browser:", error);
+                Alert.alert("Export Failed", "Error opening the export URL");
               });
           },
         },
@@ -115,7 +124,7 @@ const DataSyncScreen = () => {
 
   useEffect(() => {
     if (apiUrl) {
-      console.log('api:', apiUrl);
+      console.log("api:", apiUrl);
       fetchOptions();
     }
   }, [apiUrl]);
@@ -130,28 +139,29 @@ const DataSyncScreen = () => {
       return;
     }
     Alert.alert(
-      'Confirm Export',
-      'This will open the browser and download the file.',
+      "Confirm Export",
+      "This will open the browser and download the file.",
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Export',
+          text: "Export",
           onPress: async () => {
-            
-
             const exportUrl = `${check}/attappthree/csvex.php?table=${selectedOption}`;
 
             try {
               const result = await WebBrowser.openBrowserAsync(exportUrl);
-              if (result.type === 'cancel') {
-                Alert.alert('Export Canceled', 'The export operation was canceled.');
+              if (result.type === "cancel") {
+                Alert.alert(
+                  "Export Canceled",
+                  "The export operation was canceled."
+                );
               }
             } catch (error) {
-              console.error('Error opening browser:', error);
-              Alert.alert('Export Failed', 'Error opening the export URL');
+              console.error("Error opening browser:", error);
+              Alert.alert("Export Failed", "Error opening the export URL");
             }
           },
         },
@@ -162,28 +172,29 @@ const DataSyncScreen = () => {
 
   const handleTotalCSVExport = async () => {
     Alert.alert(
-      'Confirm Export',
-      'This will open the browser and download the file.',
+      "Confirm Export",
+      "This will open the browser and download the file.",
       [
         {
-          text: 'Cancel',
-          style: 'cancel',
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Export',
+          text: "Export",
           onPress: async () => {
-            
-
             const exportUrl = `${check}/attappthree/flatten.php`;
 
             try {
               const result = await WebBrowser.openBrowserAsync(exportUrl);
-              if (result.type === 'cancel') {
-                Alert.alert('Export Canceled', 'The export operation was canceled.');
+              if (result.type === "cancel") {
+                Alert.alert(
+                  "Export Canceled",
+                  "The export operation was canceled."
+                );
               }
             } catch (error) {
-              console.error('Error opening browser:', error);
-              Alert.alert('Export Failed', 'Error opening the export URL');
+              console.error("Error opening browser:", error);
+              Alert.alert("Export Failed", "Error opening the export URL");
             }
           },
         },
@@ -198,8 +209,8 @@ const DataSyncScreen = () => {
       const response = await axios.get(`${check}/attappthree/getOptions.php`);
       setOptions(response.data);
     } catch (error) {
-      console.error('Error fetching options:', error);
-      Alert.alert('Error', 'Error fetching options');
+      console.error("Error fetching options:", error);
+      Alert.alert("Error", "Error fetching options");
     }
     setShowLoading(false);
   };
@@ -211,74 +222,74 @@ const DataSyncScreen = () => {
       setShowLoading(false);
       if (response.data.success) {
         Alert.alert(
-          'View Logs',
+          "View Logs",
           response.data.logs,
-          [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+          [{ text: "OK", onPress: () => console.log("OK Pressed") }],
           { cancelable: false }
         );
       } else {
-        Alert.alert('Error', 'Failed to fetch logs.');
+        Alert.alert("Error", "Failed to fetch logs.");
       }
     } catch (error) {
       setShowLoading(false);
-      console.error('Error fetching logs:', error);
-      Alert.alert('Error', 'Failed to fetch logs.');
+      console.error("Error fetching logs:", error);
+      Alert.alert("Error", "Failed to fetch logs.");
     }
   };
 
   const handleDropdata = async () => {
     Alert.alert(
-        'Wipe Data?',
-        'This action will wipe all event and student data.', 
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Confirm',
-            onPress: async () => {
-              try {
-                setShowLoading(true);
-                const response = await axios.get(`${check}/attappthree/dropall.php`);
-                console.log(response.data)
-                if (response.data) {
-                  setShowLoading(false);
-                  Alert.alert('Event Data Wiped',
-                  `Data Wiped Successfuly!`,
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () => Alert.alert(
-                        'Database Dropped',
+      "Wipe Data?",
+      "This action will wipe all event and student data.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Confirm",
+          onPress: async () => {
+            try {
+              setShowLoading(true);
+              const response = await axios.get(
+                `${check}/attappthree/dropall.php`
+              );
+              console.log(response.data);
+              if (response.data) {
+                setShowLoading(false);
+                Alert.alert("Event Data Wiped", `Data Wiped Successfuly!`, [
+                  {
+                    text: "OK",
+                    onPress: () =>
+                      Alert.alert(
+                        "Database Dropped",
                         `Initialize Database?\n*if you are intending to start new, press yes\n**if you want to import old data skip this step`,
                         [
                           {
-                            text: 'Cancel',
-                            style: 'cancel',
+                            text: "Cancel",
+                            style: "cancel",
                           },
                           {
-                            text: 'Yes',
+                            text: "Yes",
                             onPress: () => initializeDatabase(),
                           },
                         ],
                         { cancelable: false }
                       ),
-                    },
-                  ]);
-                  
-                } else {
-                  Alert.alert('Error', 'Something Went Wrong, Please Try Again.');
-                }
-              } catch (error) {
-                setShowLoading(false);
-                console.error('Error fetching logs:', error);
-                Alert.alert('Error', 'Failed to Delete all data.');
+                  },
+                ]);
+              } else {
+                Alert.alert("Error", "Something Went Wrong, Please Try Again.");
               }
+            } catch (error) {
+              setShowLoading(false);
+              console.error("Error fetching logs:", error);
+              Alert.alert("Error", "Failed to Delete all data.");
             }
-          }
-        ]
-      );
+          },
+        },
+      ]
+    );
   };
 
   const initializeDatabase = async () => {
@@ -288,20 +299,20 @@ const DataSyncScreen = () => {
 
       if (response.data.success) {
         setShowLoading(false);
-        Alert.alert('Success', 'Database initialized successfully');
+        Alert.alert("Success", "Database initialized successfully");
       } else {
         setShowLoading(false);
-        Alert.alert('Error', 'Failed to initialize database');
+        Alert.alert("Error", "Failed to initialize database");
       }
     } catch (error) {
       setShowLoading(false);
-      console.error('Error:', error);
-      Alert.alert('Error', 'Something went wrong');
+      console.error("Error:", error);
+      Alert.alert("Error", "Something went wrong");
     }
   };
 
   return (
-    <ScrollView style={{ flex: 1, padding: 16, backgroundColor: 'white', }}>
+    <ScrollView style={{ flex: 1, padding: 16, backgroundColor: "white" }}>
       <Card>
         <Card.Content>
           <Title>Import Data</Title>
@@ -310,12 +321,22 @@ const DataSyncScreen = () => {
             <Paragraph>
               {selectedFile ? (
                 <>
-                  <FontAwesome name="file" size={16} color="#333" style={{ marginRight: 8 }} />
+                  <FontAwesome
+                    name="file"
+                    size={16}
+                    color="#333"
+                    style={{ marginRight: 8 }}
+                  />
                   Selected File: {selectedFileName.assets[0].name}
                 </>
               ) : (
                 <>
-                  <FontAwesome name="file" size={16} color="#aaa" style={{ marginRight: 8 }} />
+                  <FontAwesome
+                    name="file"
+                    size={16}
+                    color="#aaa"
+                    style={{ marginRight: 8 }}
+                  />
                   Select SQL File
                 </>
               )}
@@ -347,7 +368,7 @@ const DataSyncScreen = () => {
         </Card.Content>
 
         <Card.Actions>
-          <Button onPress={handleDropdata}>     Wipe Data      </Button>
+          <Button onPress={handleDropdata}> Wipe Data </Button>
         </Card.Actions>
       </Card>
 
@@ -358,18 +379,18 @@ const DataSyncScreen = () => {
           <Picker
             selectedValue={selectedOption}
             onValueChange={handleOptionChange}
-            style={{ backgroundColor: '#f5f5f5', marginVertical: 8 }}
+            style={{ backgroundColor: "#f5f5f5", marginVertical: 8 }}
           >
             <Picker.Item label="Select an Event Option..." value={null} />
-            {options && Array.isArray(options) && options.length > 0 && options.map((option, index) => (
-                option !== '' && (
-                  <Picker.Item
-                    key={index}
-                    label={option}
-                    value={option}
-                  />
-                )
-            ))}
+            {options &&
+              Array.isArray(options) &&
+              options.length > 0 &&
+              options.map(
+                (option, index) =>
+                  option !== "" && (
+                    <Picker.Item key={index} label={option} value={option} />
+                  )
+              )}
           </Picker>
         </Card.Content>
 
@@ -397,7 +418,7 @@ const DataSyncScreen = () => {
         </Card.Content>
 
         <Card.Actions>
-          <Button onPress={handleViewLogs}>      View Logs     </Button>
+          <Button onPress={handleViewLogs}> View Logs </Button>
         </Card.Actions>
       </Card>
       {/* View Logs Card */}
@@ -411,24 +432,24 @@ const DataSyncScreen = () => {
         showConfirmButton={false}
         contentContainerStyle={styles.alertContainer}
         titleStyle={styles.alertTitle}
-        progressColor="#007AFF" 
+        progressColor="#007AFF"
       />
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({ 
+const styles = StyleSheet.create({
   alertContainer: {
     borderRadius: 10,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 20,
-    width: '50%',
-    alignItems: 'center',
+    width: "50%",
+    alignItems: "center",
   },
   alertTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#007AFF', 
+    fontWeight: "bold",
+    color: "#007AFF",
     marginBottom: 10,
   },
 });
